@@ -68,6 +68,16 @@ void GameLogic::SetupScene()
     mMusicSource->SetSoundType(SOUND_MUSIC);
 
     mPhysicsWorld = mScene->GetComponent<PhysicsWorld>();
+
+    LoadFromFile("Scenes/Scene.xml");
+
+    mCamera = mScene->GetComponent<Camera>(true);
+    if (mCamera){
+        SetCameraNode(mCamera->GetNode());
+    } else {
+        Node* cameraNode = mScene->CreateChild("CameraNode");
+        mCamera = cameraNode->CreateComponent<Camera>();
+    }
 }
 
 void GameLogic::SetupInput()
