@@ -3,4 +3,4 @@
 #define GAME_ENABLE_LUA_SCRIPTING
 
 #define PROJECT_NAME "minimal-urho3d"
-#define GIT_HASH "3360135"
+#define GIT_HASH "6565be3"

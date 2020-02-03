@@ -13,7 +13,9 @@ GameLogic::GameLogic(Context* ctx)
       mCameraNode(nullptr),
       mScene(nullptr),
       mViewport(nullptr),
-      mRenderPhysics(false)
+      mRenderPhysics(false),
+      mSfxSource(nullptr),
+      mMusicSource(nullptr)
 {
 }
 
@@ -26,8 +28,8 @@ void GameLogic::Setup(VariantMap& engineParameters_)
 {
     engineParameters_[EP_FULL_SCREEN]=false;
     engineParameters_[EP_WINDOW_RESIZABLE]=true;
-    engineParameters_[EP_WINDOW_WIDTH]=1700;
-    engineParameters_[EP_WINDOW_HEIGHT]=1000;
+    engineParameters_[EP_WINDOW_WIDTH]=800;
+    engineParameters_[EP_WINDOW_HEIGHT]=600;
     engineParameters_[EP_WINDOW_TITLE]=String(PROJECT_NAME); // get the name from the CMake ProjectName
     engineParameters_[EP_RESOURCE_PATHS]="Data;CoreData";
     SubscribeToEvents();
@@ -47,6 +49,7 @@ void GameLogic::SetupSystems()
 {
     mGameNavigation = new GameNavigation(context_);
     context_->RegisterSubsystem(mGameNavigation);
+
 #ifdef GAME_ENABLE_LUA_SCRIPTING
     LuaScripting* luaScripting = new LuaScripting(context_);
     luaScripting->Init("Scripts/main.lua");
@@ -60,20 +63,11 @@ void GameLogic::SetupScene()
     mScene = new Scene(context_);
     context_->RegisterSubsystem( mScene );
 
-    // Create scene subsystem components
-    LoadFromFile("Scenes/Scene.xml");
-
-    mCameraNode = mScene->GetChild("Camera",true);
-
-    if (mCameraNode) {
-        mCamera = mCameraNode->GetComponent<Camera>();
-    }
-
     mMusicSource = mScene->CreateComponent<SoundSource>();
-      // Set the sound type to music so that master volume control works correctly
+    // Set the sound type to music so that master volume control works correctly
     mMusicSource->SetSoundType(SOUND_MUSIC);
 
-    mGameNavigation->Init();
+    mPhysicsWorld = mScene->GetComponent<PhysicsWorld>();
 }
 
 void GameLogic::SetupInput()
@@ -107,6 +101,15 @@ void GameLogic::SubscribeToEvents()
 }
 
 
+void GameLogic::SetCameraNode(Node *cameraNode)
+{
+    mCameraNode = cameraNode;
+
+    if (mCameraNode) {
+        mCamera = mCameraNode->GetComponent<Camera>();
+    }
+}
+
 // -------------------------------- handlers ----------------------------------------------
 
 void GameLogic::HandleUpdate(StringHash eventType, VariantMap &eventData)
@@ -116,8 +119,7 @@ void GameLogic::HandleUpdate(StringHash eventType, VariantMap &eventData)
 
     Input* input = GetSubsystem<Input>();
 
-    input->SetMouseVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
-
+    //input->SetMouseVisible(!input->GetMouseButtonDown(MOUSEB_RIGHT));
     if (input->GetKeyPress(KEY_F3)){
         mRenderPhysics = !mRenderPhysics;
         if (mGameNavigation){
@@ -151,7 +153,7 @@ void GameLogic::HandlePhysics(StringHash eventType, VariantMap &eventData)
     String stTrigger = isTrigger ? "[Trigger]" : "";
 
     if (eventType == E_PHYSICSCOLLISIONSTART){
-      //  URHO3D_LOGINFOF("START: %s Collision between: %s(%i) <-> %s(%i)",stTrigger.CString(),nodeA->GetName().CString(),nodeA->GetID(),nodeB->GetName().CString(),nodeB->GetID());
+      URHO3D_LOGINFOF("START: %s Collision between: %s(%i) <-> %s(%i)",stTrigger.CString(),nodeA->GetName().CString(),nodeA->GetID(),nodeB->GetName().CString(),nodeB->GetID());
     }
     else if (eventType == E_PHYSICSCOLLISIONEND){
 //        URHO3D_LOGINFOF("END  : %s Collision between: %s(%i) <-> %s(%i)",stTrigger.CString(),nodeA->GetName().CString(),nodeA->GetID(),nodeB->GetName().CString(),nodeB->GetID());
@@ -195,21 +197,21 @@ void GameLogic::HandleKeyDown(StringHash eventType, VariantMap &eventData)
 
 void GameLogic::HandleControlClicked(StringHash eventType, VariantMap& eventData)
 {
-    // Get the Text control acting as the Window's title
-    auto* windowTitle = mWindow->GetChildStaticCast<Text>("WindowTitle", true);
+//    // Get the Text control acting as the Window's title
+//    auto* windowTitle = mWindow->GetChildStaticCast<Text>("WindowTitle", true);
 
-    // Get control that was clicked
-    auto* clicked = static_cast<UIElement*>(eventData[UIMouseClick::P_ELEMENT].GetPtr());
+//    // Get control that was clicked
+//    auto* clicked = static_cast<UIElement*>(eventData[UIMouseClick::P_ELEMENT].GetPtr());
 
-    String name = "...?";
-    if (clicked)
-    {
-        // Get the name of the control that was clicked
-        name = clicked->GetName();
-    }
+//    String name = "...?";
+//    if (clicked)
+//    {
+//        // Get the name of the control that was clicked
+//        name = clicked->GetName();
+//    }
 
-    // Update the Window's title text
-    windowTitle->SetText("Hello " + name + "!");
+//    // Update the Window's title text
+//    windowTitle->SetText("Hello " + name + "!");
 }
 
 #ifdef GAME_ENABLE_DEBUG_TOOLS
@@ -253,17 +255,19 @@ void GameLogic::LoadFromFile(String sceneName, Scene* loadInto)
     }
 }
 
-void GameLogic::PlaySound(String soundFile)
+void GameLogic::PlaySound(String soundFile,float gain)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     auto* sound = cache->GetResource<Sound>("Sounds/"+soundFile);
 
-    auto* soundSource = mScene->CreateComponent<SoundSource>();
+    SoundSource* soundSource = mScene->CreateComponent<SoundSource>();
+
+
     // Component will automatically remove itself when the sound finished playing
     soundSource->SetAutoRemoveMode(REMOVE_COMPONENT);
     soundSource->Play(sound->GetDecoderStream());
     // In case we also play music, set the sound volume below maximum so that we don't clip the output
-    soundSource->SetGain(0.75f);
+    soundSource->SetGain(gain);
 }
 
 void GameLogic::PlayMusic(String musicFile)
@@ -272,7 +276,7 @@ void GameLogic::PlayMusic(String musicFile)
     auto* music = cache->GetResource<Sound>("Sounds/"+musicFile);
     // Set the song to loop
     music->SetLooped(true);
-    mMusicSource->SetGain(0.35f);
+    mMusicSource->SetGain(0.25f);
     mMusicSource->Play(music);
 }
 
@@ -303,21 +307,25 @@ void GameLogic::SetupUI()
     titleBar->SetLayoutMode(LM_HORIZONTAL);
 
     // Create the Window title Text
-    auto* windowTitle = new Text(context_);
-    windowTitle->SetName("WindowTitle");
+    mWindowTitle = new Text(context_);
+    mWindowTitle->SetText("Die Karawane!");
+    auto t = new Text(context_);
+    t->SetText("Die Karawane!");
+//    windowTitle->SetName("WindowTitle");
 
-    windowTitle->SetText("Hello GUI!");
+//    windowTitle->SetText("Hello GUI!");
 
     // Add the controls to the title bar
-    titleBar->AddChild(windowTitle);
+    titleBar->AddChild(mWindowTitle);
+
 
     // Add the title bar to the Window
     mWindow->AddChild(titleBar);
 
     // Apply styles
     mWindow->SetStyleAuto();
-    windowTitle->SetStyleAuto();
-    windowTitle->SetFontSize(18);
+    mWindowTitle->SetStyleAuto();
+    mWindowTitle->SetFontSize(14);
     // Subscribe to buttonClose release (following a 'press') events
  //   SubscribeToEvent(buttonClose, E_RELEASED, URHO3D_HANDLER(GameLogic, HandleClosePressed));
 
@@ -327,10 +335,11 @@ void GameLogic::SetupUI()
 
 
 
-void GameLogic::SetUIText(String text)
+void GameLogic::SetUIText(String text,Color color)
 {
-    auto* windowTitle = mWindow->GetChildStaticCast<Text>("WindowTitle", true);
-    windowTitle->SetText(text);
+    if (!mWindowTitle) return;
+    mWindowTitle->SetColor(color);
+    mWindowTitle->SetText(text);
 }
 
 bool GameLogic::MouseRaycast(float maxDistance, Vector3& hitPos, Drawable*& hitDrawable)
@@ -376,5 +385,73 @@ bool GameLogic::Raycast(IntVector2 screennPos,float maxDistance, Vector3& hitPos
         return true;
     }
 
+    return false;
+}
+
+bool GameLogic::PhysicsRaycast(IntVector2 screenPos,float maxDistance, Vector3& hitPos, RigidBody*& hitDrawable,String tag)
+{
+    hitDrawable = nullptr;
+
+    auto* graphics = GetSubsystem<Graphics>();
+    Scene* scene = GetSubsystem<Scene>();
+    Ray cameraRay = mCamera->GetScreenRay((float)screenPos.x_ / graphics->GetWidth(), (float)screenPos.y_ / graphics->GetHeight());
+    // Pick only geometry objects, not eg. zones or lights, only get the first (closest) hit
+
+    PODVector<PhysicsRaycastResult> results;
+
+    mPhysicsWorld->Raycast(results,cameraRay,maxDistance);
+
+    if (results.Size() == 0){
+        return false;
+    }
+
+    for(auto result : results){
+        if (result.body_ && (tag=="" || result.body_->GetNode()->HasTag(tag))){
+            hitPos = result.position_;
+            hitDrawable = result.body_;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool GameLogic::TouchPhysicsRaycast(int fingerIdx, float maxDistance, Vector3 &hitPos, RigidBody *&hitRigidbody,String tag)
+{
+    URHO3D_LOGINFO("TRY TOUCH!");
+    hitRigidbody = nullptr;
+
+    Input* input = GetSubsystem<Input>();
+
+    if (!input->GetNumTouches()) return false;
+
+
+    IntVector2 pos = input->GetTouch(fingerIdx)->position_;
+    URHO3D_LOGINFOF("TOUCH:  %i  vec:%s",fingerIdx,pos.ToString().CString());
+
+    return PhysicsRaycast(pos,maxDistance,hitPos,hitRigidbody,tag);
+}
+
+bool GameLogic::MousePhysicsRaycast(float maxDistance, Vector3 &hitPos, RigidBody *&hitRigidbody,String tag)
+{
+    hitRigidbody = nullptr;
+
+    auto* ui = GetSubsystem<UI>();
+    IntVector2 pos = ui->GetCursorPosition();
+
+    return PhysicsRaycast(pos,maxDistance,hitPos,hitRigidbody,tag);
+}
+
+bool GameLogic::MouseOrTouchPhysicsRaycast(float maxDistance, Vector3 &hitPos, RigidBody *&hitRigidbody, String tag)
+{
+    Input* input = GetSubsystem<Input>();
+
+    URHO3D_LOGINFOF("TOUCHES:%i",input->GetNumTouches());
+    if (MousePhysicsRaycast(maxDistance,hitPos,hitRigidbody,tag)){
+        return true;
+    }
+    if (TouchPhysicsRaycast(0,maxDistance,hitPos,hitRigidbody,tag)){
+        return true;
+    }
     return false;
 }

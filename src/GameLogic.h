@@ -12,6 +12,7 @@
 using namespace Urho3D;
 
 class GameNavigation;
+class Caravaner;
 
 class GameLogic : public Object
 {
@@ -27,14 +28,22 @@ public:
     void Start();
     inline Scene* GetScene() { return mScene; }
 
-    void PlaySound(String soundFile);
+    void PlaySound(String soundFile,float gain=0.75f);
     void PlayMusic(String musicFile);
 
-    void SetUIText(String text);
+    void SetUIText(String text,Color color = Color::WHITE);
 
     bool TouchRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
     bool MouseRaycast(float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
     bool Raycast(IntVector2 screenPos,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
+
+    bool TouchPhysicsRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");
+    bool MousePhysicsRaycast(float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");
+    bool PhysicsRaycast(IntVector2 screenPos,float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");
+    bool MouseOrTouchPhysicsRaycast(float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");
+
+    void SetCameraNode(Node* cameraNode);
+    inline Node* GetCameraNode() { return mCameraNode; }
 
 private:
     void SubscribeToEvents();
@@ -43,6 +52,7 @@ private:
     void SetupScene();
     void SetupInput();
     void SetupUI(); // some sample ui
+
 
     void HandleUpdate(StringHash eventType, VariantMap &eventData);
     void HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData);
@@ -60,13 +70,17 @@ private:
     Viewport* mViewport;
 
     SoundSource* mMusicSource;
+    SoundSource* mSfxSource;
+
     bool mRenderPhysics;
 
     SharedPtr<Window> mWindow;
+    SharedPtr<Text> mWindowTitle;
     /// The UI's root UIElement.
     SharedPtr<UIElement> mUiRoot;
 
     SharedPtr<GameNavigation> mGameNavigation;
+    SharedPtr<PhysicsWorld> mPhysicsWorld;
 
 };
 
