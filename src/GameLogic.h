@@ -7,20 +7,31 @@
 #include <Urho3D/Graphics/Viewport.h>
 #include <Urho3D/Container/Str.h>
 
-#include "Subsystems/Editor.h"
+#include <Editor/Editor.h>
 
 using namespace Urho3D;
+
+// todo: solve this differently. some include?:
+namespace Urho3D {
+    class Drawable;
+    class RigidBody;
+    class SoundSource;
+    class Window;
+    class Text;
+    class PhysicsWorld;
+    class UIElement;
+}
 
 class GameNavigation;
 class Caravaner;
 
 class GameLogic : public Object
 {
-    URHO3D_OBJECT(GameLogic,Object);
+    URHO3D_OBJECT(GameLogic,Object)
 
 public:
     GameLogic(Context* ctx);
-    ~GameLogic();
+    ~GameLogic() override;
 
     void Setup(VariantMap& engineParameters_);
     void LoadFromFile(String sceneName,Node* node);

@@ -52,7 +52,7 @@ for d in */ ; do
         EXPORTED="$EXPORTED $FOLDERNAME"
      else
 	     if [ "$2" != "" ]; then
-           $DIR/sign_apk.sh $GAME $2
+           $DIR/sign_apk.sh $GAME $2 || true
            if [ $? -eq 0 ]; then
              EXPORTED="$EXPORTED android"
            fi

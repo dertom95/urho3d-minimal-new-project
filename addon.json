@@ -1,0 +1,38 @@
+[
+    {
+        "addon_type"    :   "urho3d",        
+        "name"          :   "Editor",
+        "description"   :   "addon containing vanilla angelscript-editor",
+        "git_url"       :   "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project",
+        "authors"       :   [
+                                { "name" : "Thomas Trocha", 
+                                  "email" : "thomas.trocha@gmail.com"
+                                }
+                            ],
+        "addon_dependencies"  : [
+                            "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project:editor"
+                          ],
+        "info"             : {
+                                "scripting"     :   {
+                                    "angelscript" : false,
+                                    "lua"         : false
+                                }
+                             },
+        "urho3d_config"    :   {
+                                    "URHO3D_ANGELSCRIPT"   : true
+                               },
+        "cmake_include" :   "CMake/Editor.cmake",
+        "stable"        :   "950c252b91d2f38c19141327fe056ee9bad7686d",
+        "files"         :   {
+                                "folder"  : ["src-addon/Editor"]
+                            },
+        "res_folder"    :   "bin/EditorData",
+        "setup_md"      :   "setup_editor.md",
+    
+        "youtube"       :   "https://www.youtube.com/watch?v=p8A4OTtegIc",
+        "links"         :   [
+                                { "title":"Editor Instructions", "url" : "https://urho3d.github.io/documentation/1.7/_editor_instructions.html" }
+                            ]
+    }
+]
+
