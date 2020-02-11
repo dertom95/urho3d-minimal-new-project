@@ -2,6 +2,7 @@
     {
         "addon_type"    :   "urho3d",        
         "name"          :   "Editor",
+        "category"      :   "Tools",
         "description"   :   "addon containing vanilla angelscript-editor",
         "git_url"       :   "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project",
         "authors"       :   [
@@ -10,7 +11,7 @@
                                 }
                             ],
         "addon_dependencies"  : [
-                            "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project:editor"
+                            "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project:Editor"
                           ],
         "info"             : {
                                 "scripting"     :   {
@@ -24,7 +25,7 @@
         "cmake_include" :   "CMake/Editor.cmake",
         "stable"        :   "950c252b91d2f38c19141327fe056ee9bad7686d",
         "files"         :   {
-                                "folder"  : ["src-addon/Editor"]
+                                "folder"  : ["src_addon/Editor"]
                             },
         "res_folder"    :   "bin/EditorData",
         "setup_md"      :   "setup_editor.md",
@@ -33,6 +34,31 @@
         "links"         :   [
                                 { "title":"Editor Instructions", "url" : "https://urho3d.github.io/documentation/1.7/_editor_instructions.html" }
                             ]
+    },
+    {
+        "addon_type"    :   "urho3d",        
+        "name"          :   "Navigation",
+        "category"      :   "Navigation",
+        "description"   :   "Navigation Subsystem",
+        "git_url"       :   "/home/ttrocha/_dev/projects/games/urho3d-minimal-new-project",
+        "authors"       :   [
+                                { "name" : "Thomas Trocha", 
+                                  "email" : "thomas.trocha@gmail.com"
+                                }
+                            ],
+        "info"             : {
+                                "scripting"     :   {
+                                    "angelscript" : false,
+                                    "lua"         : false
+                                }
+                             },
+        "cmake_include" :   "CMake/Navigation.cmake",
+        "stable"        :   "950c252b91d2f38c19141327fe056ee9bad7686d",
+        "files"         :   {
+                                "folder"  : ["src_addon/Navigation"]
+                            },
+        "setup_md"      :   "setup_navigation.md"
+    
     }
 ]
 

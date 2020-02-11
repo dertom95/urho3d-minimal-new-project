@@ -2,7 +2,7 @@
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Urho3DAll.h>
 
-#include "Subsystems/GameNavigation.h"
+#include <Navigation/GameNavigation.h>
 
 #ifdef GAME_ENABLE_LUA_SCRIPTING
 # include "Subsystems/LuaScripting.h"
