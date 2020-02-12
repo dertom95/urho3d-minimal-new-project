@@ -1,6 +1,6 @@
 #include "GameNavigation.h"
 
-#include <project_options.h>
+//#include <project_options.h>
 
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Navigation/NavigationMesh.h>
@@ -9,8 +9,10 @@
 #include <Urho3D/Graphics/DebugRenderer.h>
 #include <Urho3D/Graphics/Drawable.h>
 #include <Urho3D/Input/Input.h>
+#include <Urho3D/Navigation/CrowdAgent.h>
+#include <Urho3D/Navigation/NavigationEvents.h>
 
-#include "../GameLogic.h"
+//#include "../GameLogic.h"
 
 GameNavigation::GameNavigation(Context *ctx)
     : Object(ctx),

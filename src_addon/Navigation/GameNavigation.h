@@ -1,6 +1,6 @@
 #pragma once
 
-#include <project_options.h>
+//#include <project_options.h>
 #include <Urho3D/Core/Object.h>
 
 namespace Urho3D {
