@@ -1,0 +1,37 @@
+{
+    "file_type"     :   "addon_description",
+    "addon_type"    :   "urho3d",        
+    "name"          :   "Editor",
+    "category"      :   "Tools",
+    "description"   :   "addon containing vanilla angelscript-editor",
+    "git_url"       :   "https://github.com/dertom95/urho3d-minimal-new-project.git",
+    "authors"       :   [
+                            { "name" : "Thomas Trocha", 
+                              "email" : "thomas.trocha@gmail.com"
+                            }
+                        ],
+
+    "tags"          : {
+                            "stable"    :   "950c252b91d2f38c19141327fe056ee9bad7686d"
+                      },
+    "files"         : {
+                            "folders"  : [
+                                "src_addon/Editor",
+                                "bin/EditorData"
+                            ],
+                            "files" : [
+                                "CMake/Editor.cmake",
+                                "docs/setup_editor.md"
+                            ]
+                       },
+    "meta"             : {
+                            "urho3d_config"    :   {
+                                "URHO3D_ANGELSCRIPT"   : true
+                            },
+                            "setup_md"      :   "docs/setup_editor.md",
+                            "youtube"       :   "https://www.youtube.com/watch?v=p8A4OTtegIc",
+                            "links"         :   [
+                                                    { "title":"Editor Instructions", "url" : "https://urho3d.github.io/documentation/1.7/_editor_instructions.html" }
+                                                ]
+                         }
+}
