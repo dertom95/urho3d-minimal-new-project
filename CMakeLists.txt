@@ -30,7 +30,7 @@ option(GAME_RETRIEVE_GIT_HASH "Retrieve current-githash" ON)
 option(GAME_ENABLE_LUA_SCRIPTING "Retrieve current-githash" ON)
 
 if (GAME_ENABLE_DEBUG_TOOLS)
-    set (URHO3D_PACKAGING 0 CACHE BOOL "")
+    set (URHO3D_PACKAGING 1 CACHE BOOL "")
 else()
     set (URHO3D_PACKAGING 1 CACHE BOOL "")
 endif()

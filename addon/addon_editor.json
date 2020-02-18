@@ -15,12 +15,12 @@
                             "stable"    :   "950c252b91d2f38c19141327fe056ee9bad7686d"
                       },
     "files"         : {
-                            "folders"  : [
-                                "src_addon/Editor",
+                            "cmake_subdirs" : ["src_addon/Editor"],
+                            
+                            "copy_folders"  : [
                                 "bin/EditorData"
                             ],
-                            "files" : [
-                                "CMake/Editor.cmake",
+                            "copy_files" : [
                                 "docs/setup_editor.md"
                             ]
                        },
