@@ -14,9 +14,9 @@
                             "stable"    :   "950c252b91d2f38c19141327fe056ee9bad7686d"
                       },
     "files"         :   {
-                            "folders"  : ["src_addon/Navigation"],
-                            "files"    : ["docs/setup_navigation.md",
-                                          "CMake/Navigation.cmake"]
+	    		    "cmake_subdirs" : [ "src_addon/navigation"  ],
+                            "copy_folders"  : [],
+                            "files"    : ["docs/setup_navigation.md"                                          ]
                         },
     "meta"             : {
                             "setup_md"      :   "setup_navigation.md"
