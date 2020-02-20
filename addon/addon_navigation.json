@@ -16,7 +16,7 @@
     "files"         :   {
 	    		    "cmake_subdirs" : [ "src_addon/Navigation"  ],
                             "copy_folders"  : [],
-                            "files"    : ["docs/setup_navigation.md"                                          ]
+                            "copy_files"    : ["docs/setup_navigation.md"                                          ]
                         },
     "meta"             : {
                             "setup_md"      :   "setup_navigation.md"
