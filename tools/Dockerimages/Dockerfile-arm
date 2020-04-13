@@ -6,6 +6,6 @@ RUN cd /Urho3D && /arm_entrypoint.sh rake make arm -j $(nproc)
 
 ENV URHO3D_HOME=/Urho3D/build/arm
 
-ADD PackageTool /Urho3D/build/mingw/bin/tool
+ADD PackageTool /Urho3D/build/arm/bin/tool
 
 

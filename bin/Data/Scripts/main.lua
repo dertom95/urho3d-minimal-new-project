@@ -9,7 +9,7 @@ function Start()
 end
 
 function HandleUpdate(eventType,eventData)
-     print("dt:"..eventData["TimeStep"])
+     --print("dt:"..eventData["TimeStep"])
 end
 
 Tester = ScriptObject()
@@ -23,7 +23,7 @@ end
 function Tester:HandleUpdate(eventType,eventData)
     local dt = eventData["TimeStep"]
     self.testValue = self.testValue + 1
-    print("UserData from blender:"..self.userdata["prefix"]:GetString())
+    --print("UserData from blender:"..self.userdata["prefix"]:GetString())
 end
 
 

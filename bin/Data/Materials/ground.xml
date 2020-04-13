@@ -1,0 +1,12 @@
+<material>
+	<texture name="" unit="diffuse"/>
+	<cull value="ccw"/>
+	<shadowcull value="ccw"/>
+	<fill value="solid"/>
+	<parameter name="MatDiffColor" value="0.982495 0.886231 1 1"/>
+	<parameter name="MatSpecColor" value="0 0 0 1"/>
+	<parameter name="MatEmissiveColor" value="0 0 0"/>
+	<parameter name="UOffset" value="30.0 0 0 0"/>
+	<parameter name="VOffset" value="0 60.0 0 0"/>
+	<technique loddistance="0" name="Techniques/DiffVCol.xml" quality="0"/>
+</material>
