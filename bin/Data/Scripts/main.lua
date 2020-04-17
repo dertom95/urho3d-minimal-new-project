@@ -9,7 +9,7 @@ function Start()
 end
 
 function HandleUpdate(eventType,eventData)
-     --print("dt:"..eventData["TimeStep"])
+     print("dt:"..eventData["TimeStep"])
 end
 
 Tester = ScriptObject()
