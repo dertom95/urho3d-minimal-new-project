@@ -54,6 +54,10 @@ void GameLogic::SetupSystems()
     LuaScripting* luaScripting = new LuaScripting(context_);
     luaScripting->Init("Scripts/main.lua");
     context_->RegisterSubsystem(luaScripting);
+
+    // make sure to include angelscript... (otherwise the angelscript part would be stript away in release and editor need it)
+    // TODO: Make this better :D
+    new ScriptFile(context_);    
 #endif
 
 }
