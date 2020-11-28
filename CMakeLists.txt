@@ -16,11 +16,10 @@ endif ()
 # Set project name
 project (minimal-urho3d)
 
-
-
+source_group("Source" ${PROJECT_SOURCE_DIR})
 
 # Set CMake modules search path
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules)
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # Include UrhoCommon.cmake module after setting project name
 
 # options
@@ -31,9 +30,9 @@ option(GAME_RETRIEVE_GIT_HASH "Retrieve current-githash" ON)
 option(GAME_ENABLE_LUA_SCRIPTING "Enable LUA-Scripting" OFF)
 
 if (GAME_ENABLE_DEBUG_TOOLS)
-    set (URHO3D_PACKAGING 1 CACHE BOOL "")
+    set (URHO3D_PACKAGING 0 CACHE BOOL "")
 else()
-    set (URHO3D_PACKAGING 1 CACHE BOOL "")
+    set (URHO3D_PACKAGING 0 CACHE BOOL "")
 endif()
 
 set (URHO3D_DEPLOYMENT_TARGET generic CACHE STRING "") # it is important to set this before running thorugh UrhoCommon
@@ -64,16 +63,16 @@ endif()
 
 
 # create configure file
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/CMake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
 
 # get all source files
 file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h )
 
 set(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated)
 
-
 # include addons
-include("CMake/Addons.cmake")
+include("cmake/Addons.cmake")
 
 # Setup target with resource copying
 setup_main_executable ()
+

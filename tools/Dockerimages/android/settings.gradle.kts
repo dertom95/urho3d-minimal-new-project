@@ -20,16 +20,16 @@
 // THE SOFTWARE.
 //
 
-pluginManagement {
+/*pluginManagement {
     resolutionStrategy {
         eachPlugin {
             when {
                 requested.id.id.startsWith("com.android.") ->
-                    useModule("com.android.tools.build:gradle:3.5.3")
+                    useModule("com.android.tools.build:gradle:$androidToolsVersion")
                 requested.id.id.startsWith("org.jetbrains.kotlin.") ->
-                    useVersion(embeddedKotlinVersion)
+                    useVersion(kotlinVersion)
                 requested.id.id == "com.jfrog.bintray" ->
-                    useVersion("1.8.4")
+                    useVersion(bintrayVersion)
             }
         }
     }
@@ -40,6 +40,6 @@ pluginManagement {
         jcenter()
     }
 }
-
+*/
 //include(":android:urho3d-lib", ":android:launcher-app")
 include(":android:launcher-app")

@@ -10,7 +10,7 @@ URHO3D_DEFINE_APPLICATION_MAIN(StartupApplication)
 
 StartupApplication::StartupApplication(Context* ctx) : Application(ctx)
 {
-    setbuf(stdout, NULL);
+    //setbuf(stdout, NULL);
     SubscribeToEvents();
 }
 

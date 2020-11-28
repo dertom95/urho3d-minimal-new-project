@@ -2,3 +2,7 @@ build/
 export/
 .blend1
 .blend2
+.cxx
+.gradle
+.idea
+CMakeLists.txt.user

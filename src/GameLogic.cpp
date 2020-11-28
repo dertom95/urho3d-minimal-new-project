@@ -67,6 +67,10 @@ void GameLogic::SetupScene()
     mScene = new Scene(context_);
     context_->RegisterSubsystem( mScene );
 
+    auto cache = context_->GetSubsystem<ResourceCache>();
+    cache->AddPackageFile("sponza.pak");
+
+
     mMusicSource = mScene->CreateComponent<SoundSource>();
     // Set the sound type to music so that master volume control works correctly
     mMusicSource->SetSoundType(SOUND_MUSIC);
@@ -93,8 +97,11 @@ void GameLogic::SetupInput()
 
 void GameLogic::SetupViewport()
 {
+    ResourceCache* cache = context_->GetSubsystem<ResourceCache>();
+    RenderPath* rp = new RenderPath();
+    rp->Load(cache->GetResource<XMLFile>("RenderPaths/PBRDeferred.xml"));
     Renderer* renderer = GetSubsystem<Renderer>();
-    mViewport = new Viewport(context_, mScene, mCameraNode->GetComponent<Camera>());
+    mViewport = new Viewport(context_, mScene, mCameraNode->GetComponent<Camera>(),rp);
     renderer->SetViewport(0,mViewport);
     context_->RegisterSubsystem(mViewport);
 }

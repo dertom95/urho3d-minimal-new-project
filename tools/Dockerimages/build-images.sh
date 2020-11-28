@@ -29,7 +29,7 @@ build_image () {
 
 	echo "build image: $full"
 
-	check_tag=$(sudo docker images | grep $tag)
+	check_tag=$(docker images | grep $tag)
 	
 	if [ -z "$check_tag" ]; then
 		if DOCKER_CLI_EXPERIMENTAL=enabled docker manifest inspect $full >/dev/null; then
@@ -40,22 +40,23 @@ build_image () {
 	echo check_tag:$check_tag 
 	if [ -z "$check_tag" ]; then
 		imagefile=Dockerfile-$1$postfix
-		echo sudo docker build -f $imagefile -t $full .
-		sudo docker build -f $imagefile -t $full .
-		echo sudo docker tag $full dertom95/$1:master
-		sudo docker tag $full dertom95/urho3d-$1:master
+		echo docker build -f $imagefile -t $full .
+		docker build -f $imagefile -t $full .
+		echo docker tag $full dertom95/$1:latest
+		docker tag $full dertom95/urho3d-$1:latest
 
 		if [ "$push" == "--push" ]; then
-			echo sudo docker push $image
-			sudo docker push $image
+			echo docker push $image
+			 docker push $image
 		fi			
 	else
 		echo "docker-tag '$full' already exists. no rebuild"
 	fi
 }
 
-build_image "native"
-build_image "mingw"
-build_image "arm"
-build_image "rpi"
-build_image "web"
+#build_image "linux"
+#build_image "mingw"
+#build_image "arm"
+#build_image "rpi"
+#build_image "web"
+build_image "android"
