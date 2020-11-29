@@ -14,7 +14,7 @@
 
 namespace Urho3D {
     class Context;
-
+    class ResourceCache;
 }
 
 using namespace Urho3D;
@@ -22,6 +22,16 @@ using namespace Urho3D;
 struct TextureExportPath{
     String resFilepath;
     String absFilepath;
+
+
+    bool operator==(const TextureExportPath other) const{
+        return absFilepath==other.absFilepath;
+    }
+
+    bool operator!=(const TextureExportPath other) const{
+        return absFilepath!=other.absFilepath;
+    }
+
 };
 
 
@@ -38,13 +48,16 @@ public:
 
     void AddMaterialFolder(const String& folder);
     void AddTechniqueFolder(const String& folder);
+    void AddRenderPathFolder(const String& folder);
     void AddTextureFolder(const String& folder);
     void AddAnimationFolder(const String& folder);
     void AddModelFolder(const String& folder);
     void AddParticleFolder(const String& folder);
     void AddSoundFolder(const String& folder);
 
+    inline void SetResourceCache(SharedPtr<ResourceCache> resCache) { m_resourceCache = resCache; }
     void Export(String filename,bool exportComponentTree=true,bool exportMaterialTree=true);
+    void ClearFilters();
 
     JSONObject ExportComponents();
     JSONObject ExportMaterials();
@@ -85,6 +98,7 @@ private:
     HashSet<StringHash> m_listOfSuperClasses;
     Vector<String> m_materialFolders;
     Vector<String> m_techniqueFolders;
+    Vector<String> m_renderPathFolders;
     Vector<String> m_textureFolders;
     Vector<String> m_modelFolders;
     Vector<String> m_animationFolders;
@@ -95,10 +109,14 @@ private:
 
     Vector<String> materialFiles;
     Vector<String> techniqueFiles;
+    Vector<String> renderPathFiles;
     Vector<TextureExportPath> textureFiles;
+    Vector<TextureExportPath> cubeTextureFiles;
     Vector<String> modelFiles;
     Vector<String> animationFiles;
     Vector<String> particleFiles;
     Vector<String> soundFiles;
+
+    SharedPtr<ResourceCache> m_resourceCache;
 };
 #endif

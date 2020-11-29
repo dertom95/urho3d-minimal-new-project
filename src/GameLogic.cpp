@@ -3,6 +3,7 @@
 #include <Urho3D/Urho3DAll.h>
 
 #include <Navigation/GameNavigation.h>
+#include "Components/RenderData.h"
 
 #ifdef GAME_ENABLE_LUA_SCRIPTING
 # include "Subsystems/LuaScripting.h"
@@ -98,11 +99,24 @@ void GameLogic::SetupInput()
 void GameLogic::SetupViewport()
 {
     ResourceCache* cache = context_->GetSubsystem<ResourceCache>();
-    RenderPath* rp = new RenderPath();
-    rp->Load(cache->GetResource<XMLFile>("RenderPaths/PBRDeferred.xml"));
+
     Renderer* renderer = GetSubsystem<Renderer>();
-    mViewport = new Viewport(context_, mScene, mCameraNode->GetComponent<Camera>(),rp);
-    renderer->SetViewport(0,mViewport);
+
+    auto renderData = mScene->GetComponent<RenderData>(true);
+
+    if (renderData){
+        mViewport = new Viewport(context_, mScene, mCameraNode->GetComponent<Camera>());
+        renderer->SetViewport(0,mViewport);
+
+        renderData->SetRenderPathOnViewport(mViewport);
+    } else {
+        RenderPath* rp = new RenderPath();
+        rp->Load(cache->GetResource<XMLFile>("RenderPaths/PBRDeferred.xml"));
+        mViewport = new Viewport(context_, mScene, mCameraNode->GetComponent<Camera>(),rp);
+        renderer->SetViewport(0,mViewport);
+    }
+
+
     context_->RegisterSubsystem(mViewport);
 }
 

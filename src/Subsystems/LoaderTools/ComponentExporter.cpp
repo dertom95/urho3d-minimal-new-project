@@ -15,11 +15,13 @@
 #include <Urho3D/Container/Str.h>
 #include <Urho3D/Core/Object.h>
 #include <Urho3D/Core/Context.h>
+#include <Urho3D/Graphics/RenderPath.h>
 
 Urho3DNodeTreeExporter::Urho3DNodeTreeExporter(Context* context, ExportMode exportMode)
     : Object(context),
       m_exportMode(exportMode)
 {
+    m_resourceCache = context->GetSubsystem<ResourceCache>();
 }
 
 void Urho3DNodeTreeExporter::AddComponentHashToFilterList(const StringHash& componentHash)
@@ -34,6 +36,10 @@ void Urho3DNodeTreeExporter::AddSuperComponentHashToFilterList(const StringHash&
 
 bool Urho3DNodeTreeExporter::CheckSuperTypes(const TypeInfo* type)
 {
+    if (m_listOfSuperClasses.Size()==0){
+        return false;
+    }
+
     for (auto superType : m_listOfSuperClasses){
         if (!type->IsTypeOf(superType)){
             return false;
@@ -47,14 +53,20 @@ bool CompareString(const String& a,const String& b){
     return a < b;
 }
 
+bool CompareTexturePath(const TextureExportPath& a,const TextureExportPath& b){
+    return a.resFilepath < b.resFilepath;
+}
+
 void Urho3DNodeTreeExporter::ProcessFileSystem()
 {
-    ResourceCache* cache = GetSubsystem<ResourceCache>();
+    ResourceCache* cache = m_resourceCache;
+
     FileSystem* fs = GetSubsystem<FileSystem>();
 
     materialFiles.Clear();
     techniqueFiles.Clear();
     textureFiles.Clear();
+    cubeTextureFiles.Clear();
     modelFiles.Clear();
 
     for (String resDir : cache->GetResourceDirs()){
@@ -85,6 +97,17 @@ void Urho3DNodeTreeExporter::ProcessFileSystem()
             }
         }
 
+        // grab techniques from the specified technique folders
+        for (String path : m_renderPathFolders){
+            String dir = resDir+path;
+            fs->ScanDir(dirFiles,dir,"*.xml",SCAN_FILES,true);
+            for (String foundRenderPath : dirFiles){
+                auto renderpathResourceName = path+"/"+foundRenderPath;
+                if (!renderPathFiles.Contains(renderpathResourceName)){
+                    renderPathFiles.Push(renderpathResourceName);
+                }
+            }
+        }
 
         // grab models from the specified model folder. all files with .mdl extension are considered a mesh
         for (String path : m_modelFolders){
@@ -129,41 +152,64 @@ void Urho3DNodeTreeExporter::ProcessFileSystem()
                 p.resFilepath = path+"/"+foundTexture;
                 textureFiles.Push(p);
             }
-        }
 
-        for (String path : m_particleFolders){
-            String dir = resDir+path;
+            File file(context_);
             fs->ScanDir(dirFiles,dir,"*.xml",SCAN_FILES,true);
-            for (String foundParticle : dirFiles){
-                auto particleResourceName = path+"/"+foundParticle;
-                particleFiles.Push(particleResourceName);
+            for (String foundTexture : dirFiles){
+                TextureExportPath p;
+                p.absFilepath = dir +"/"+foundTexture;
+                p.resFilepath = path+"/"+foundTexture;
+
+                file.Open(p.absFilepath);
+                String allText="";
+                while (!file.IsEof()){
+                    String line = file.ReadLine();
+                    if (line.ToUpper()=="<CUBEMAP>"){
+                        textureFiles.Push(p);
+                        cubeTextureFiles.Push(p);
+                    }
+                    break;
+                }
+            }
+
+            for (String path : m_particleFolders){
+                String dir = resDir+path;
+                fs->ScanDir(dirFiles,dir,"*.xml",SCAN_FILES,true);
+                for (String foundParticle : dirFiles){
+                    auto particleResourceName = path+"/"+foundParticle;
+                    particleFiles.Push(particleResourceName);
+                }
+            }
+
+            for (String path : m_soundFolders){
+                String dir = resDir+path;
+                fs->ScanDir(dirFiles,dir,"*.ogg",SCAN_FILES,true);
+                for (String foundSound : dirFiles){
+                    auto soundResourceName = path+"/"+foundSound;
+                    soundFiles.Push(soundResourceName);
+                }
+            }
+
+            for (String path : m_soundFolders){
+                String dir = resDir+path;
+                fs->ScanDir(dirFiles,dir,"*.wav",SCAN_FILES,true);
+                for (String foundSound : dirFiles){
+                    auto soundResourceName = path+"/"+foundSound;
+                    soundFiles.Push(soundResourceName);
+                }
             }
         }
 
-        for (String path : m_soundFolders){
-            String dir = resDir+path;
-            fs->ScanDir(dirFiles,dir,"*.ogg",SCAN_FILES,true);
-            for (String foundSound : dirFiles){
-                auto soundResourceName = path+"/"+foundSound;
-                soundFiles.Push(soundResourceName);
-            }
-        }
-
-        for (String path : m_soundFolders){
-            String dir = resDir+path;
-            fs->ScanDir(dirFiles,dir,"*.wav",SCAN_FILES,true);
-            for (String foundSound : dirFiles){
-                auto soundResourceName = path+"/"+foundSound;
-                soundFiles.Push(soundResourceName);
-            }
-        }
     }
 
     Sort(materialFiles.Begin(),materialFiles.End(),CompareString);
     Sort(techniqueFiles.Begin(),techniqueFiles.End(),CompareString);
-   // Sort(textureFiles.Begin(),techniqueFiles.End(),CompareString);
+    Sort(renderPathFiles.Begin(),renderPathFiles.End(),CompareString);
+    Sort(textureFiles.Begin(),textureFiles.End(),CompareTexturePath);
+    Sort(cubeTextureFiles.Begin(),cubeTextureFiles.End(),CompareTexturePath);
     Sort(modelFiles.Begin(),modelFiles.End(),CompareString);
     Sort(animationFiles.Begin(),animationFiles.End(),CompareString);
+
 }
 
 JSONObject Urho3DNodeTreeExporter::ExportMaterials()
@@ -399,7 +445,7 @@ JSONObject Urho3DNodeTreeExporter::ExportMaterials()
         for (TextureExportPath texture : textureFiles){
             StringHash hash(texture.resFilepath);
             String id(hash.Value() % 10000000);
-
+            counter++;
             NodeAddEnumElement(enumElems,texture.resFilepath,texture.resFilepath,texture.absFilepath,"COLOR",id);
         }
         NodeAddPropEnum(textureNode,"Texture",enumElems,true,"0",true);
@@ -503,16 +549,6 @@ void Urho3DNodeTreeExporter::NodeAddEnumElement(JSONArray &elements, const Strin
     elements.Push(elem);
 }
 
-void Urho3DNodeTreeExporter::AddParticleFolder(const String &folder)
-{
-    m_particleFolders.Push(folder);
-}
-
-void Urho3DNodeTreeExporter::AddSoundFolder(const String &folder)
-{
-    m_soundFolders.Push(folder);
-}
-
 void Urho3DNodeTreeExporter::AddMaterialFolder(const String &folder)
 {
     m_materialFolders.Push(folder);
@@ -521,6 +557,11 @@ void Urho3DNodeTreeExporter::AddMaterialFolder(const String &folder)
 void Urho3DNodeTreeExporter::AddTechniqueFolder(const String& folder)
 {
     m_techniqueFolders.Push(folder);
+}
+
+void Urho3DNodeTreeExporter::AddRenderPathFolder(const String &folder)
+{
+    m_renderPathFolders.Push(folder);
 }
 
 void Urho3DNodeTreeExporter::AddTextureFolder(const String& folder)
@@ -536,6 +577,16 @@ void Urho3DNodeTreeExporter::AddModelFolder(const String& folder)
 void Urho3DNodeTreeExporter::AddAnimationFolder(const String& folder)
 {
     m_animationFolders.Push(folder);
+}
+
+void Urho3DNodeTreeExporter::AddParticleFolder(const String &folder)
+{
+    m_particleFolders.Push(folder);
+}
+
+void Urho3DNodeTreeExporter::AddSoundFolder(const String &folder)
+{
+    m_soundFolders.Push(folder);
 }
 
 void Urho3DNodeTreeExporter::NodeAddSocket(JSONObject &node, const String &name, NodeSocketType type,bool isInputSocket)
@@ -572,6 +623,13 @@ void Urho3DNodeTreeExporter::NodeAddOutputSocket(JSONObject &node, const String 
     NodeAddSocket(node,name,type,false);
 }
 
+void Urho3DNodeTreeExporter::ClearFilters()
+{
+    m_listOfComponents.Clear();
+    m_listOfSuperClasses.Clear();
+    SetExportMode(BlackList);
+}
+
 String  Urho3DNodeTreeExporter::GetTypeCategory(const StringHash& hash,const String& defaultValue){
     const HashMap<String, Vector<StringHash> >& objectCategories = context_->GetObjectCategories();
     for (HashMap<String, Vector<StringHash> >::ConstIterator i = objectCategories.Begin(); i != objectCategories.End(); ++i)
@@ -602,6 +660,10 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
     for (unsigned i = 0; i < values.Size(); ++i)
     {
         SharedPtr<ObjectFactory> val = values.At(i);
+
+        int compAmount = m_listOfComponents.Size();
+        bool compContains = m_listOfComponents.Contains(val->GetType());
+        bool superTypeContains = CheckSuperTypes(val->GetTypeInfo());
 
         // apply black- /whitelist-Filter
         if (    (InBlacklistMode() && (m_listOfComponents.Contains(val->GetType()) || CheckSuperTypes(val->GetTypeInfo())) )
@@ -742,6 +804,25 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
                                 alreadyAdded = true;
 
                             }
+                            else if (typeName == "TextureCube")
+                            {
+                                // dropdown to choose textures available from the resource-path
+                                JSONArray enumElems;
+                                NodeAddEnumElement(enumElems,"none","None","No Texture","TEXTURE");
+
+                                for (TextureExportPath tex : textureFiles){
+                                    if (tex.resFilepath.EndsWith(".xml")){
+                                        StringHash hash(tex.resFilepath);
+                                        String id(hash.Value() % 10000000);
+
+                                        NodeAddEnumElement(enumElems,"TextureCube;"+tex.resFilepath,tex.resFilepath,tex.absFilepath,"TEXTURE",id);
+                                    }
+                                }
+
+                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                alreadyAdded = true;
+
+                            }
                             else if (typeName == "Material")
                             {
                                 // dropdown to choose techniques available from the resource-path
@@ -791,9 +872,7 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
                                 NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
                                 alreadyAdded = true;
                             }
-                            else {
-                                URHO3D_LOGWARNINGF("Could not process resource-type:%s",typeName.CString());
-                            }
+
                         }
                     break;
                     default:
@@ -829,18 +908,47 @@ JSONObject Urho3DNodeTreeExporter::ExportGlobalData(){
         }
 
 
-        NodeAddEnumElement(techniques,techniqueName,techniqueName,"Technique "+techniqueName,"COLOR",id,category);
+        NodeAddEnumElement(techniques,techniqueName,techniqueName,"Technique "+techniqueName,"NODE_MATERIAL",id,category);
     }
     globalData["techniques"] = techniques;
+
+    JSONArray renderPaths;
+    for (String renderPathName : renderPathFiles){
+        StringHash hash(renderPathName);
+        String id(hash.Value() % 10000000);
+
+        String category = "";
+
+        NodeAddEnumElement(renderPaths,renderPathName,renderPathName,"RenderPath "+renderPathName,"MATERIAL",id,category);
+    }
+    globalData["renderPaths"] = renderPaths;
 
     JSONArray textures;
     for (TextureExportPath texture : textureFiles){
         StringHash hash(texture.resFilepath);
         String id(hash.Value() % 10000000);
 
-        NodeAddEnumElement(textures,texture.resFilepath,texture.resFilepath,texture.absFilepath,"COLOR",id);
+        NodeAddEnumElement(textures,texture.resFilepath,texture.resFilepath,texture.absFilepath,"TEXTURE",id);
     }
     globalData["textures"] = textures;
+
+    JSONArray cubeTextures;
+    for (TextureExportPath texture : cubeTextureFiles){
+        StringHash hash(texture.resFilepath);
+        String id(hash.Value() % 10000000);
+
+        NodeAddEnumElement(cubeTextures,texture.resFilepath,texture.resFilepath,texture.absFilepath,"MESH_CUBE",id);
+    }
+    globalData["cubeTextures"] = cubeTextures;
+
+
+    JSONArray models;
+    for (String modelName : modelFiles){
+        StringHash hash(modelName);
+        String id(hash.Value() % 10000000);
+        NodeAddEnumElement(models,modelName,modelName,"Model "+modelName,"OUTLINER_DATA_MESH",id);
+    }
+    globalData["models"] = models;
 
     return globalData;
 }
