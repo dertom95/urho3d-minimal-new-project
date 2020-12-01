@@ -38,15 +38,16 @@ public:
     void LoadFromFile(String sceneName,Scene* scene=nullptr);
     void Start();
     inline Scene* GetScene() { return mScene; }
+    inline void   SetScene(SharedPtr<Scene> scene) { mScene = scene; }
 
     void PlaySound(String soundFile,float gain=0.75f);
     void PlayMusic(String musicFile);
 
     void SetUIText(String text,Color color = Color::WHITE);
 
-    bool TouchRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
-    bool MouseRaycast(float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
-    bool Raycast(IntVector2 screenPos,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable);
+    bool TouchRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, Node*& hitnode,String tag="");
+    bool MouseRaycast(float maxDistance, Vector3& hitPos, Node*& hitnode,String tag="");
+    bool Raycast(IntVector2 screenPos,float maxDistance, Vector3& hitPos, Node*& hitnode,String tag="");
 
     bool TouchPhysicsRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");
     bool MousePhysicsRaycast(float maxDistance, Vector3& hitPos, RigidBody*& hitRigidbody,String tag="");

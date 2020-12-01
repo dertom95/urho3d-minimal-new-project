@@ -1,0 +1,3 @@
+[submodule "src/absengine"]
+	path = src/absengine
+	url = http://ttrocha@nas-02:3000/ttrocha/absengine.git

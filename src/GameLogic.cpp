@@ -377,33 +377,33 @@ void GameLogic::SetUIText(String text,Color color)
     mWindowTitle->SetText(text);
 }
 
-bool GameLogic::MouseRaycast(float maxDistance, Vector3& hitPos, Drawable*& hitDrawable)
+bool GameLogic::MouseRaycast(float maxDistance, Vector3& hitPos, Node*& hitnode,String tag)
 {
-    hitDrawable = nullptr;
+    hitnode = nullptr;
 
     auto* ui = GetSubsystem<UI>();
     IntVector2 pos = ui->GetCursorPosition();
 
-    return Raycast(pos,maxDistance,hitPos,hitDrawable);
+    return Raycast(pos,maxDistance,hitPos,hitnode,tag);
 }
 
-bool GameLogic::TouchRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable)
+bool GameLogic::TouchRaycast(int fingerIdx,float maxDistance, Vector3& hitPos, Node*& hitnode,String tag)
 {
-    hitDrawable = nullptr;
+    hitnode = nullptr;
 
     Input* input = GetSubsystem<Input>();
     if (!input->GetNumTouches()) return false;
 
     IntVector2 pos = input->GetTouch(fingerIdx)->position_;
 
-    return Raycast(pos,maxDistance,hitPos,hitDrawable);
+    return Raycast(pos,maxDistance,hitPos,hitnode,tag);
 }
 
 
 
-bool GameLogic::Raycast(IntVector2 screennPos,float maxDistance, Vector3& hitPos, Drawable*& hitDrawable)
+bool GameLogic::Raycast(IntVector2 screennPos,float maxDistance, Vector3& hitPos, Node*& hitnode,String tag)
 {
-    hitDrawable = nullptr;
+    hitnode = nullptr;
 
     auto* graphics = GetSubsystem<Graphics>();
     Scene* scene = GetSubsystem<Scene>();
@@ -412,13 +412,15 @@ bool GameLogic::Raycast(IntVector2 screennPos,float maxDistance, Vector3& hitPos
     PODVector<RayQueryResult> results;
     RayOctreeQuery query(results, cameraRay, RAY_TRIANGLE, maxDistance, DRAWABLE_GEOMETRY);
     scene->GetComponent<Octree>()->RaycastSingle(query);
-    if (results.Size())
-    {
-        RayQueryResult& result = results[0];
-        hitPos = result.position_;
-        hitDrawable = result.drawable_;
-        return true;
+
+    for(auto result : results){
+        if (result.drawable_ && (tag=="" || result.drawable_->GetNode()->HasTag(tag))){
+            hitPos = result.position_;
+            hitnode = result.drawable_->GetNode();
+            return true;
+        }
     }
+
 
     return false;
 }
