@@ -69,8 +69,6 @@ void GameLogic::SetupScene()
     context_->RegisterSubsystem( mScene );
 
     auto cache = context_->GetSubsystem<ResourceCache>();
-    cache->AddPackageFile("sponza.pak");
-
 
     mMusicSource = mScene->CreateComponent<SoundSource>();
     // Set the sound type to music so that master volume control works correctly
