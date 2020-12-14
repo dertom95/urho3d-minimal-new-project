@@ -62,6 +62,8 @@ void GameNavigation::Init()
         // Subscribe HandleCrowdAgentFormation() function for positioning agent into a formation
         SubscribeToEvent(E_CROWD_AGENT_FORMATION, URHO3D_HANDLER(GameNavigation, HandleCrowdAgentFormation));
 
+        SubscribeToEvent(E_CROWD_AGENT_NODE_STATE_CHANGED, URHO3D_HANDLER(GameNavigation, HandleCrowdAgentStatusChanged));
+        SubscribeToEvent(E_CROWD_AGENT_STATE_CHANGED, URHO3D_HANDLER(GameNavigation, HandleCrowdAgentStatusChanged));
     }
 
 }
@@ -141,6 +143,26 @@ void GameNavigation::HandlePostRender(StringHash eventType, VariantMap &data)
 #endif
 }
 
+void GameNavigation::HandleCrowdAgentStatusChanged(StringHash eventType,VariantMap& eventData)
+{
+    using namespace CrowdAgentNodeStateChanged;
+
+    if (eventType == E_CROWD_AGENT_NODE_STATE_CHANGED){
+        int a=0;
+    } else {
+        int a=0;
+    }
+
+    auto* node = static_cast<Node*>(eventData[P_NODE].GetPtr());
+
+    auto agentState = (CrowdAgentState)eventData[P_CROWD_AGENT_STATE].GetInt();
+    auto targetState = (CrowdAgentTargetState)eventData[P_CROWD_AGENT_STATE].GetInt();
+
+    URHO3D_LOGINFOF("CrowdAgentStatusChange(%s): agentstate:%i targetState:%i",node->GetName().CString(),(int)agentState,(int)targetState);
+
+}
+
+
 
 void GameNavigation::HandleCrowdAgentFailure(StringHash eventType, VariantMap& eventData)
 {
@@ -166,7 +188,16 @@ void GameNavigation::HandleCrowdAgentReposition(StringHash eventType, VariantMap
     auto* node = static_cast<Node*>(eventData[P_NODE].GetPtr());
     auto* agent = static_cast<CrowdAgent*>(eventData[P_CROWD_AGENT].GetPtr());
     Vector3 velocity = eventData[P_VELOCITY].GetVector3();
+    Vector3 position = eventData[P_POSITION].GetVector3();
     float timeStep = eventData[P_TIMESTEP].GetFloat();
+    bool arrived = eventData[P_ARRIVED].GetBool();
+    if (arrived){
+        URHO3D_LOGINFOF("arrived:%s",node->GetName().CString());
+        agent->SetEnabled(false);
+        if (arrivalCallback){
+            arrivalCallback(SharedPtr<Node>(node),position);
+        }
+    }
 }
 
 void GameNavigation::HandleCrowdAgentFormation(StringHash eventType, VariantMap& eventData)

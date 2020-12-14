@@ -25,7 +25,7 @@ public:
     inline void ShowDebug(bool show) { mDrawDebug = show; }
     inline bool IsShowDebug() { return mDrawDebug; }
     SharedPtr<NavigationMesh> GetNavMesh() { return mNavMesh; }
-
+    void SetArrivalCallback(std::function<void(SharedPtr<Node>,const Vector3&)> arrivalCallback) { this->arrivalCallback=arrivalCallback; }
 #ifdef GAME_ENABLE_DEBUG_TOOLS
     inline void EnableTestMode(bool enable) { tempTestMode = enable; }
 #endif
@@ -41,9 +41,13 @@ private:
     /// Handle crowd agent formation.
     void HandleCrowdAgentFormation(StringHash eventType, VariantMap& eventData);
 
+    void HandleCrowdAgentStatusChanged(StringHash eventType,VariantMap& eventData);
+
     SharedPtr<NavigationMesh> mNavMesh;
     SharedPtr<CrowdManager> mCrowdManager;
     SharedPtr<Scene> mScene;
+
+    std::function<void(SharedPtr<Node>,const Vector3&)> arrivalCallback;
 
     bool mDrawDebug;
 
