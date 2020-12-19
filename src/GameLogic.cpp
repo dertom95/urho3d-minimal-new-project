@@ -14,9 +14,7 @@ GameLogic::GameLogic(Context* ctx)
       mCameraNode(nullptr),
       mScene(nullptr),
       mViewport(nullptr),
-      mRenderPhysics(false),
-      mSfxSource(nullptr),
-      mMusicSource(nullptr)
+      mRenderPhysics(false)
 {
 }
 
@@ -63,6 +61,22 @@ void GameLogic::SetupSystems()
 
 }
 
+SoundSource* GameLogic::GetOrCreateSoundSource(Scene* scene)
+{
+    if (!scene){
+        scene = mScene;
+    }
+    auto musicSource = scene->GetOrCreateComponent<SoundSource>();
+    // Set the sound type to music so that master volume control works correctly
+    musicSource->SetSoundType(SOUND_MUSIC);
+    return musicSource;
+}
+
+void GameLogic::SetupAudio()
+{
+
+}
+
 void GameLogic::SetupScene()
 {
     mScene = new Scene(context_);
@@ -70,9 +84,7 @@ void GameLogic::SetupScene()
 
     auto cache = context_->GetSubsystem<ResourceCache>();
 
-    mMusicSource = mScene->CreateComponent<SoundSource>();
-    // Set the sound type to music so that master volume control works correctly
-    mMusicSource->SetSoundType(SOUND_MUSIC);
+    SetupAudio();
 
     mPhysicsWorld = mScene->GetComponent<PhysicsWorld>();
 
@@ -295,8 +307,12 @@ void GameLogic::PlaySound(String soundFile,float gain)
     auto* cache = GetSubsystem<ResourceCache>();
     auto* sound = cache->GetResource<Sound>("Sounds/"+soundFile);
 
-    SoundSource* soundSource = mScene->CreateComponent<SoundSource>();
+    PlaySound(sound,gain);
+}
 
+void GameLogic::PlaySound(Sound* sound,float gain)
+{
+    SoundSource* soundSource = mScene->CreateComponent<SoundSource>();
 
     // Component will automatically remove itself when the sound finished playing
     soundSource->SetAutoRemoveMode(REMOVE_COMPONENT);
@@ -305,14 +321,26 @@ void GameLogic::PlaySound(String soundFile,float gain)
     soundSource->SetGain(gain);
 }
 
-void GameLogic::PlayMusic(String musicFile)
+void GameLogic::PlayMusic(String musicFile,bool looped,float gain)
 {
     auto* cache = GetSubsystem<ResourceCache>();
     auto* music = cache->GetResource<Sound>("Sounds/"+musicFile);
     // Set the song to loop
+    PlayMusic(music,looped,gain);
+}
+
+void GameLogic::PlayMusic(Sound* music,bool looped,float gain)
+{
     music->SetLooped(true);
+    auto mMusicSource = GetOrCreateSoundSource();
     mMusicSource->SetGain(0.25f);
     mMusicSource->Play(music);
+}
+
+float GameLogic::GetMusicPosition()
+{
+    auto mMusicSource = GetOrCreateSoundSource();
+    return mMusicSource->GetTimePosition();
 }
 
 void GameLogic::SetupUI()

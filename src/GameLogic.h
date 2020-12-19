@@ -40,8 +40,14 @@ public:
     inline Scene* GetScene() { return mScene; }
     inline void   SetScene(SharedPtr<Scene> scene) { mScene = scene; }
 
+    void PlaySound(Sound* soundFile,float gain=0.75f);
     void PlaySound(String soundFile,float gain=0.75f);
-    void PlayMusic(String musicFile);
+    void PlayMusic(Sound* musicFile,bool looped=true,float gain=0.25f);
+    void PlayMusic(String musicFile,bool looped=true,float gain=0.25f);
+    float GetMusicPosition();
+
+    void SetupAudio();
+    SoundSource* GetOrCreateSoundSource(Scene* scene=nullptr);
 
     void SetUIText(String text,Color color = Color::WHITE);
 
@@ -81,8 +87,6 @@ private:
     Scene* mScene;
     Viewport* mViewport;
 
-    SoundSource* mMusicSource;
-    SoundSource* mSfxSource;
 
     bool mRenderPhysics;
 
