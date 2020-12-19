@@ -136,6 +136,8 @@ void GameLogic::SubscribeToEvents()
 
 void GameLogic::SetCameraNode(Node *cameraNode)
 {
+    if (mCameraNode==cameraNode) return;
+
     mCameraNode = cameraNode;
 
     if (mCameraNode) {
