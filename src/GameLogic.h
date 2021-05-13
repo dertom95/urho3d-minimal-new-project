@@ -97,6 +97,7 @@ private:
 
     SharedPtr<GameNavigation> mGameNavigation;
     SharedPtr<PhysicsWorld> mPhysicsWorld;
+    SharedPtr<Node> walker;
 
 };
 

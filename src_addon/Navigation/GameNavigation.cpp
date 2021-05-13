@@ -1,7 +1,5 @@
 #include "GameNavigation.h"
 
-//#include <project_options.h>
-
 #include <Urho3D/Scene/Scene.h>
 #include <Urho3D/Navigation/NavigationMesh.h>
 #include <Urho3D/IO/Log.h>
@@ -71,6 +69,7 @@ void GameNavigation::Init()
 
 void GameNavigation::HandleUpdate(StringHash eventType, VariantMap &data)
 {
+#if false
 #ifdef GAME_ENABLE_DEBUG_TOOLS
     if (tempTestMode) {
         Input* input = GetSubsystem<Input>();
@@ -106,6 +105,7 @@ void GameNavigation::HandleUpdate(StringHash eventType, VariantMap &data)
         }
 
     }
+#endif
 #endif
 }
 

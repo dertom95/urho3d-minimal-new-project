@@ -30,7 +30,8 @@ void StartupApplication::Start()
 
     game_->Start();
 
-#ifdef GAME_ENABLE_DEBUG_TOOLS
+#ifndef GAME_ENABLE_HEADLESS
+# ifdef GAME_ENABLE_DEBUG_TOOLS
     // Get default style
     XMLFile* xmlFile = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
     // Create console
@@ -48,8 +49,7 @@ void StartupApplication::Start()
     // export registered components
     ExportComponents(String(PROJECT_NAME)+"_components.json");
   #endif
-
-
+# endif
 #endif
 }
 

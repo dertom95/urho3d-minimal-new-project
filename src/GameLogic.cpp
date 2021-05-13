@@ -31,6 +31,9 @@ void GameLogic::Setup(VariantMap& engineParameters_)
     engineParameters_[EP_WINDOW_HEIGHT]=600;
     engineParameters_[EP_WINDOW_TITLE]=String(PROJECT_NAME); // get the name from the CMake ProjectName
     engineParameters_[EP_RESOURCE_PATHS]="Data;CoreData";
+#ifdef GAME_ENABLE_HEADLESS
+    engineParameters_[EP_HEADLESS]=true;
+#endif
     SubscribeToEvents();
 }
 
@@ -38,9 +41,11 @@ void GameLogic::Start()
 {
     SetupSystems();
     SetupScene();
+#ifndef GAME_ENABLE_HEADLESS
     SetupViewport();
     SetupInput();
     SetupUI();
+#endif
 }
 
 
@@ -77,6 +82,8 @@ void GameLogic::SetupAudio()
 
 }
 
+
+
 void GameLogic::SetupScene()
 {
     mScene = new Scene(context_);
@@ -97,6 +104,29 @@ void GameLogic::SetupScene()
         Node* cameraNode = mScene->CreateChild("CameraNode");
         mCamera = cameraNode->CreateComponent<Camera>();
     }
+
+    NavigationMesh* navMesh = mScene->CreateComponent<NavigationMesh>();
+    navMesh->SetTileSize(32);
+
+    Navigable* navigable = mScene->GetComponent<Navigable>(true);
+    if (!navigable){
+        navigable = mScene->CreateComponent<Navigable>();
+        navigable->SetRecursive(true);
+    }
+
+    mScene->GetOrCreateComponent<DebugRenderer>();
+    mScene->GetOrCreateComponent<PhysicsWorld>();
+    auto cm = mScene->GetOrCreateComponent<CrowdManager>();
+    mGameNavigation->Init();
+    PODVector<Vector3> path;
+    mGameNavigation->FindPath(Vector3(0,0,0),Vector3(5,0,0),path);
+    PODVector<Node*> nodes;
+    mScene->GetNodesWithTag(nodes,"walker");
+    if (nodes.Size()>0){
+        walker = nodes[0];
+        mGameNavigation->MoveTo(Vector3(15,0,5),walker);
+    }
+    int a=0;
 }
 
 void GameLogic::SetupInput()
@@ -173,6 +203,8 @@ void GameLogic::HandleUpdate(StringHash eventType, VariantMap &eventData)
             mGameNavigation->ShowDebug(!mGameNavigation->IsShowDebug());
         }
     }
+
+    URHO3D_LOGINFOF("Walker POS:%s",walker->GetPosition().ToString().CString());
 }
 
 void GameLogic::HandlePhysics(StringHash eventType, VariantMap &eventData)

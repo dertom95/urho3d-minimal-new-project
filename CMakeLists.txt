@@ -14,7 +14,7 @@ if (COMMAND cmake_policy)
 endif ()
 
 # Set project name
-project (minimal-urho3d)
+project (Headless_Test)
 
 source_group("Source" ${PROJECT_SOURCE_DIR})
 
@@ -28,6 +28,7 @@ option(GAME_ENABLE_COMPONENT_EXPORTER "Enable Component-Export as JSON" ON)
 option(GAME_RETRIEVE_GIT_HASH "Retrieve current-githash" ON)
 # ANDROID: atm(04/2020) lua-scripting leads to an runtime-error (not sure why)
 option(GAME_ENABLE_LUA_SCRIPTING "Enable LUA-Scripting" OFF)
+option(GAME_ENABLE_HEADLESS "Enable HEADLESS-Mode" OFF)
 
 if (GAME_ENABLE_DEBUG_TOOLS)
     set (URHO3D_PACKAGING 0 CACHE BOOL "")

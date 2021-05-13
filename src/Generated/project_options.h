@@ -1,6 +1,7 @@
 #define GAME_ENABLE_COMPONENT_EXPORTER
 #define GAME_ENABLE_DEBUG_TOOLS
 /* #undef GAME_ENABLE_LUA_SCRIPTING */
+#define GAME_ENABLE_HEADLESS
 
-#define PROJECT_NAME "urho-ccengine"
-#define GIT_HASH "47b6877"
+#define PROJECT_NAME "Headless_Test"
+#define GIT_HASH "18c44aa"
