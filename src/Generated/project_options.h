@@ -2,5 +2,5 @@
 #define GAME_ENABLE_DEBUG_TOOLS
 /* #undef GAME_ENABLE_LUA_SCRIPTING */
 
-#define PROJECT_NAME "urho-ccengine"
-#define GIT_HASH "47b6877"
+#define PROJECT_NAME "minimal-urho3d"
+#define GIT_HASH "18c44aa"
