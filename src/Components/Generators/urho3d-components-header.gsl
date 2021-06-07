@@ -46,11 +46,11 @@ endfunction
 .   abort("No type for field:$(name) $(line)")
 .  endif
 .  if is_primitive(type)
-static const $(type:) default$(name:) = $(default:); /* $(result) */
+static const $(type:) default_$(component.name)_$(name:) = $(default:); /* $(result) */
 .  elsif is_vector(type)
-static const $(Type) default$(name:)($(default:));
+static const $(Type) default_$(component.name)_$(name:)($(default:));
 .  elsif is_string(type)
-static const $(Type) default$(name:) = "$(default:)";
+static const $(Type) default_$(component.name)_$(name:) = "$(default:)";
 .  elsif is_enum(type)
 .  prefix = ""
 .  if defined(item_prefix)
@@ -65,7 +65,7 @@ enum $(enum:) {
     $(prefix:)$(item.name:)$(item_value:),
 .   endfor    
 };
-static const $(enum:) default$(name:) = $(prefix:)$(default:);
+static const $(enum:) default_$(component.name)_$(name:) = $(prefix:)$(default:);
 
 .  else 
 .  abort("Unknown type:'$(type)' line:$(line)")
@@ -86,7 +86,7 @@ public:
 private:
 . for field
 . echo "t:"+field.type
-    $(get_type_name(type)) $(name:)=default$(name:);
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
 . endfor
 };
 .endfor

@@ -1,7 +1,6 @@
 #pragma once
 #include <project_options.h>
 
-#ifdef GAME_ENABLE_LUA_SCRIPTING
 
 #include <Urho3D/Scene/Node.h>
 
@@ -17,5 +16,4 @@ public:
     int count;
     Node* node;
 };
-#endif
 

@@ -24,9 +24,9 @@ void $(name:)::RegisterObject(Context *context)
     context->RegisterFactory<$(name:)>("$(category?"misc":)");
 . for field
 .  if type="enum"
-    URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default$(name:), AM_DEFAULT);
+    URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
 .  else
-    URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default$(name:), AM_DEFAULT);
+    URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default_$(component.name)_$(name:), AM_DEFAULT);
 .  endif    
 . endfor # field
 }

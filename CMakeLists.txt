@@ -61,13 +61,29 @@ if (GAME_RETRIEVE_GIT_HASH)
     endif()
 endif()
 
-if (GAME_ENABLE_LUA_SCRIPTING)
-    add_definitions(-fpermissive)
-endif()
+add_definitions(-fpermissive)
 
 
 # create configure file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
+
+# generate components (linux only)
+if (UNIX)
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+        COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.sh
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
+    )
+endif()
+
+if (WIN32)
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.h
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+        COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.bat
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
+    )
+endif()
+
 
 # get all source files
 file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xml)
@@ -79,4 +95,3 @@ include("cmake/Addons.cmake")
 
 # Setup target with resource copying
 setup_main_executable ()
-
