@@ -67,9 +67,10 @@ add_definitions(-fpermissive)
 # create configure file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
 
-# generate components (linux only)
+# hacky: since I generate in source-tree and I'm sure the files are there I can use a dummy as output
+#        this is only to let qtcreator to still show the gnenerated files
 if (UNIX)
-    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.h
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/dummy.h
         DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
         COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.sh
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
@@ -77,7 +78,7 @@ if (UNIX)
 endif()
 
 if (WIN32)
-    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.h
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/dummy.h
         DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
         COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.bat
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
