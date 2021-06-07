@@ -9,6 +9,7 @@ namespace Urho3D {
     class ScriptFile;
     class LuaScript;
 }
+struct lua_State;
 
 class LuaScripting : public Object
 {
@@ -16,6 +17,7 @@ class LuaScripting : public Object
 public:
     LuaScripting(Context* ctx);
     void Init(String initialScriptFilename);
+
 
 #ifdef GAME_ENABLE_DEBUG_TOOLS
     void HandleConsole(StringHash eventType, VariantMap& eventData);

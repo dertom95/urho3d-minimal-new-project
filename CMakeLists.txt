@@ -61,12 +61,16 @@ if (GAME_RETRIEVE_GIT_HASH)
     endif()
 endif()
 
+if (GAME_ENABLE_LUA_SCRIPTING)
+    add_definitions(-fpermissive)
+endif()
+
 
 # create configure file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
 
 # get all source files
-file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h )
+file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xml)
 
 set(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated)
 

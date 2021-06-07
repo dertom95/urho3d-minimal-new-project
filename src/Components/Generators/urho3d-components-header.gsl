@@ -1,0 +1,95 @@
+.template 0
+echo "processing urho3d-components-header"
+function is_primitive(type)
+    result = my.type="int"|my.type="float"|my.type="bool"
+    return result
+endfunction
+
+function is_vector(type)
+    return string.prefixed(my.type,"vector")
+endfunction
+
+function is_string(type)
+    return string.prefixed(my.type,"string")
+endfunction
+
+function is_enum(type)
+  return my.type="enum"
+endfunction
+
+function get_type_name(type)
+    if is_primitive(my.type)
+        return my.type
+    elsif is_vector(my.type) 
+        return "$(my.Type)"
+    elsif is_string(my.type)
+        return "$(my.Type)"
+    elsif is_enum(my.type)
+        return "$(enum:)"
+    else 
+        abort("Unknown type:'$(type)'  Line:$(line)")
+endif
+
+
+endfunction
+
+.endtemplate
+.output "Generated/gen-comps.h"
+.template 1
+#pragma once
+
+#include <Urho3D/Urho3DAll.h>
+
+.for component
+. for field by name
+.  if !defined(type)
+.   abort("No type for field:$(name) $(line)")
+.  endif
+.  if is_primitive(type)
+static const $(type:) default$(name:) = $(default:); /* $(result) */
+.  elsif is_vector(type)
+static const $(Type) default$(name:)($(default:));
+.  elsif is_string(type)
+static const $(Type) default$(name:) = "$(default:)";
+.  elsif is_enum(type)
+.  prefix = ""
+.  if defined(item_prefix)
+.   prefix = "$(item_prefix:)_"   
+.  endif
+enum $(enum:) {
+.   for item
+.    item_value = ""
+.    if defined(value)
+.     item_value = "=$(value:)"
+.    endif
+    $(prefix:)$(item.name:)$(item_value:),
+.   endfor    
+};
+static const $(enum:) default$(name:) = $(prefix:)$(default:);
+
+.  else 
+.  abort("Unknown type:'$(type)' line:$(line)")
+.  endif
+. endfor
+
+class $(name:) : public Component
+{
+    URHO3D_OBJECT($(name:),Component);
+public:
+    static void RegisterObject(Context *context);
+
+    $(name:)(Context* ctx);
+
+//    const Vector3& GetGroupOffset() const  { return groupOffset;}
+//    void SetGroupOffset(const Vector3& groupOffset);
+
+private:
+. for field
+. echo "t:"+field.type
+    $(get_type_name(type)) $(name:)=default$(name:);
+. endfor
+};
+.endfor
+
+void register_components(Context* ctx);
+.endtemplate

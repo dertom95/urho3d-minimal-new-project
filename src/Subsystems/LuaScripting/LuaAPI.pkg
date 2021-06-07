@@ -1,0 +1,15 @@
+$using namespace Urho3D;
+$#include "../LuaAPI.h"
+
+int Add(int a,int b);
+void NodeTranslate(Node* node, Vector3 translate);
+
+class SomeObject{
+public:
+    SomeObject(int _count);
+
+    int count;
+    Node* node;
+};
+
+

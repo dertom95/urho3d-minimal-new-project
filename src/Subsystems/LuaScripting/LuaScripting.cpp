@@ -2,6 +2,8 @@
 
 #include <Urho3D/Urho3DAll.h>
 
+extern int tolua_LuaAPI_open (lua_State* tolua_S);
+
 LuaScripting::LuaScripting(Context *ctx)
         : Object(ctx)
 {
@@ -14,6 +16,9 @@ void LuaScripting::Init(String scriptFile)
 
     if (cache->Exists(scriptFile)){
         mLuaScript = new LuaScript(context_);
+        // activate the lua-api
+        tolua_LuaAPI_open(mLuaScript->GetState());
+
         context_->RegisterSubsystem(mLuaScript);
 
         // If script loading is successful, proceed to main loop

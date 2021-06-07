@@ -6,7 +6,7 @@
 #include "Components/RenderData.h"
 
 #ifdef GAME_ENABLE_LUA_SCRIPTING
-# include "Subsystems/LuaScripting.h"
+# include "Subsystems/LuaScripting/LuaScripting.h"
 #endif
 
 GameLogic::GameLogic(Context* ctx)
@@ -211,7 +211,10 @@ void GameLogic::HandlePhysics(StringHash eventType, VariantMap &eventData)
 void GameLogic::HandlePostRenderUpdate(StringHash eventType, VariantMap &eventData)
 {
     if (mRenderPhysics) {
-        mScene->GetComponent<PhysicsWorld>()->DrawDebugGeometry(false);
+        auto pWorld = mScene->GetComponent<PhysicsWorld>();
+        if (pWorld) {
+            pWorld->DrawDebugGeometry(false);
+        }
     }
 }
 

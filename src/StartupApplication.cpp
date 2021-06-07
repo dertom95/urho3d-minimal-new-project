@@ -4,6 +4,7 @@
 #include <Urho3D/Engine/EngineDefs.h>
 #include <Urho3D/Urho3DAll.h>
 
+#include "Components/Generated/gen-comps.h"
 #include "Components/ComponentsActivator.h"
 
 URHO3D_DEFINE_APPLICATION_MAIN(StartupApplication)
@@ -96,44 +97,45 @@ void StartupApplication::SetupComponentExporter()
     exporter->SetExportMode(Urho3DNodeTreeExporter::WhiteList);
 
     // include all Components that inherit from LogicComponent
-    exporter->AddSuperComponentHashToFilterList(LogicComponent::GetTypeStatic());
+//    exporter->AddSuperComponentHashToFilterList(LogicComponent::GetTypeStatic());
 
 
-    exporter->AddMaterialFolder("Materials");
-    exporter->AddTechniqueFolder("Techniques");
-    exporter->AddTextureFolder("Textures");
-    exporter->AddModelFolder("Models");
-    exporter->AddAnimationFolder("Models");
-    exporter->AddParticleFolder("Particle");
-    exporter->AddSoundFolder("Sounds");
+//    exporter->AddMaterialFolder("Materials");
+//    exporter->AddTechniqueFolder("Techniques");
+//    exporter->AddTextureFolder("Textures");
+//    exporter->AddModelFolder("Models");
+//    exporter->AddAnimationFolder("Models");
+//    exporter->AddParticleFolder("Particle");
+//    exporter->AddSoundFolder("Sounds");
 
     // explicitly export those components
-    exporter->AddComponentHashToFilterList(Light::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(Camera::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(SoundSource::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(RigidBody::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(CollisionShape::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(Navigable::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(NavArea::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(NavigationMesh::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(DynamicNavigationMesh::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(CrowdAgent::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(CrowdManager::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(Obstacle::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(Octree::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(PhysicsWorld::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(DebugRenderer::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(Zone::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(AnimationController::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(ParticleEmitter::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(RibbonTrail::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(LuaScriptInstance::GetTypeStatic());
-    exporter->AddComponentHashToFilterList(SoundSource3D::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Light::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Camera::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(SoundSource::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(RigidBody::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(CollisionShape::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Navigable::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(NavArea::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(NavigationMesh::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(DynamicNavigationMesh::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(CrowdAgent::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(CrowdManager::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Obstacle::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Octree::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(PhysicsWorld::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(DebugRenderer::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(Zone::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(AnimationController::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(ParticleEmitter::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(RibbonTrail::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(LuaScriptInstance::GetTypeStatic());
+//    exporter->AddComponentHashToFilterList(SoundSource3D::GetTypeStatic());
   //  exporter->AddComponentHashToFilterList(ParticleEmitter2D::GetTypeStatic());
 }
 
 void StartupApplication::ExportComponents(const String& outputPath)
 {
+    register_components(context_);
     Urho3DNodeTreeExporter* exporter = GetSubsystem<Urho3DNodeTreeExporter>();
     exporter->Export(outputPath,true,false);
 }
