@@ -6,9 +6,12 @@
         <field name="int_value2" type="int" default="1895" visibility="protected"/>
         <field name="bool_value" type="bool" default="false"/>
         <field name="float_value" type="float" default="18.95f"/>
-        <field name="string_value" type="string" default="Fortuna!"/>
+        <field name="string_value" type="string" default="Fortuna!">
+            <getterSetter getter_name="GetStringValue2" setter_name="SetStringValue"/>
+        </field>
         <field name="string2_value" type="string" default="goal" expose="false"/>
-        <field name="enum_value" enum="TestEnum" item_prefix="te" type="enum" default="Pawn">
+        <field name="TestType" enum="TestEnum" item_prefix="te" type="enum" default="Pawn">
+            <getterSetter/>
             <item name="Tower" value="0"/>
             <item name="Pawn" />
             <item name="King" />
@@ -22,6 +25,7 @@
         <method name="Update" override="true">
             <parameter name="dt" type="float"/>
         </method>
+        <method name="SomeConstMethod" const="true"/>
     </component>
 
     <component name="CCMarker" category="minimal">

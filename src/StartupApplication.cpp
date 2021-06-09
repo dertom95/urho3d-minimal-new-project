@@ -23,6 +23,7 @@ void StartupApplication::Setup()
     // setup game
     game_->Setup(engineParameters_);
     ComponentsActivator::RegisterComponents(context_);
+    register_components(context_);
 }
 
 void StartupApplication::Start()
@@ -135,7 +136,6 @@ void StartupApplication::SetupComponentExporter()
 
 void StartupApplication::ExportComponents(const String& outputPath)
 {
-    register_components(context_);
     Urho3DNodeTreeExporter* exporter = GetSubsystem<Urho3DNodeTreeExporter>();
     exporter->Export(outputPath,true,false);
 }

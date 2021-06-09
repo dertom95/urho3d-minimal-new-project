@@ -33,7 +33,7 @@ endfunction
 
 function get_virtual(method)
     if (defined(my.method.virtual)&my.method.virtual="true") | (defined(my.method.override)&my.method.override="true")
-        return "virtual"
+        return "virtual "
     else
         return ""
     endif
@@ -50,12 +50,20 @@ function get_params(method)
     return _params
 endfunction
 
+function get_const(method)
+    _const=""
+    if defined(my.method.const) & my.method.const="true"
+        _const=" const"
+    endif
+    return _const    
+endfunction
+
 function get_method_signature_with_decorators(method)
     _override=""
     if defined(my.method.override) & my.method.override="true"
         _override=" override"
-    endif   
-    return "$(get_virtual(my.method)) $((my.method.return_type?"void"):) $(name:)($(get_params(my.method)))$(_override)"
+    endif
+    return "$(get_virtual(my.method))$((my.method.return_type?"void"):) $(name:)($(get_params(my.method)))$(_override)$(get_const(my.method))"
 endfunction
 
 
@@ -73,23 +81,35 @@ endfunction
 . for field by name
 .  field.expose = !defined(field.expose) | field.expose="true"
 .  field.visibility = field.visibility ? "private"
-.  if field.visibility="public"
-.   .component_has_public="true"
-.   echo "$(field.name) is public"
-.  elsif field.visibility="protected"
-.   .component_has_protected="true"
-.   echo "$(field.name) is protected $(component_has_protected)"
-.  elsif field.visibility="private"
-.   echo "$(field.name) is private"
-.   component_has_private="true"
+.  if defined(field->getterSetter)
+. # ------ GETTER SETTER -----------
+.    new component.method
+.      methodname = "$(field->getterSetter.getter_name ? ("Get"+field.Name))"
+.      define method.name=methodname
+.      define method.return_type="$(get_type_name(field.type))"
+.      define method.const="true"
+.      field.gettername=methodname
+.    endnew
+.    new component.method
+.      methodname = "$(field->getterSetter.setter_name ? ("Set"+field.Name))"
+.      define method.name=methodname
+.      field.settername=methodname
+.      new method.parameter
+.        define parameter.name="value"
+.        define parameter.type="$(get_type_name(field.type))"
+.      endnew
+.    endnew
 .  else
-.   abort("[ERROR line $(line)]: Unknown visiblity($(my.field.visiblity)) for field $(my.field.name) in component '$(my.component.name)'")    
+.  echo "NO GETTER: $(field->getterSetter.getter_name?"")"   
 .  endif
 .  if !defined(type)
 .   abort("No type for field:$(name) $(line)")
 .  endif
+.
+.# ------- DEFAULT-VALUES -------
+.
 .  if is_primitive(type)
-static const $(type:) default_$(component.name)_$(name:) = $(default:); /* $(result) */
+static const $(type:) default_$(component.name)_$(name:) = $(default:);
 .  elsif is_vector(type)
 static const $(Type) default_$(component.name)_$(name:)($(default:));
 .  elsif is_string(type)
@@ -123,7 +143,7 @@ public:
 
     $(name:)(Context* ctx);
 .
-.# -- output methods --
+.# -- METHODS --
 
 . for method where !defined(visibility)|visibility="private"
 .  if first()
@@ -146,7 +166,8 @@ public:
     $(get_method_signature_with_decorators(method));        
 . endfor
 
-.# -- output fields--
+.# -- FIELDS --
+.
 . for field where visibility?="private"
 .  if first()
 private:
@@ -171,6 +192,7 @@ public:
     $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
 . endfor
 };
+.echo component.string()
 .endfor
 
 void register_components(Context* ctx);

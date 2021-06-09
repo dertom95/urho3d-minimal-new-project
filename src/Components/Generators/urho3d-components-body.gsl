@@ -6,37 +6,50 @@
 
 #include "../../Subsystems/LoaderTools/ComponentExporter.h"
 
-.
+.#--------------------- ENUM-NAMES -----------------------------------
 .for component
-. for field where field.type="enum"
+. for field where field.type="enum" & field.expose
 static const char* $(enum:)Names[]={
 .  for item
     "$(name:)",
-.  endfor        
+.  endfor # item
     nullptr
 };
-. endfor
+. endfor # field
 
+.# ------------------- CONSTRUCTOR -----------------------------------
 $(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){}
 
+.# ------------------- REGISTER OBJECT -------------------------------
 void $(name:)::RegisterObject(Context *context)
 {
     context->RegisterFactory<$(name:)>("$(category?"misc":)");
 . for field where field.expose
 .  if type="enum"
+.   if defined(field->getterSetter)
+    URHO3D_ENUM_ACCESSOR_ATTRIBUTE("$(name:)",$(field.gettername:),$(field.settername:),$(enum:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
+.   else
     URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
+.   endif  
 .  else
+.   if defined(field->getterSetter)
+    URHO3D_ACCESSOR_ATTRIBUTE("$(name:)", $(field.gettername:), $(field.settername:), $(get_type_name(type)), default_$(component.name)_$(name:), AM_DEFAULT);
+.   else
     URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default_$(component.name)_$(name:), AM_DEFAULT);
+.   endif 
 .  endif    
 . endfor # field
 }
-.endfor # component
+.endfor # --- main-loop-end: component ----------
+
+
 
 void register_components(Context* ctx){
 .for component
     $(name:)::RegisterObject(ctx);
 .endfor # component    
 
+.# ---------------- NODE Exporter ----------------------------- (TODO: generate json with GSL?)
     auto exporter = ctx->GetSubsystem<Urho3DNodeTreeExporter>();
     if (exporter){
 .for component
@@ -45,17 +58,19 @@ void register_components(Context* ctx){
     }
 
 }
+
+.# ---------------- GENERATE IMPL-FILES ----------------------------------------------------------------
 .if !defined(directory.open("impl"))
 . directory.create("impl")
 .endif
 .for component
-. if !file.exists("impl/$(component.name:).cpp")    
+. if !file.exists("impl/$(component.name:).cpp") | defined(switches.overwrite)
 .output "impl/$(component.name:).cpp"
 #include "../Generated/gen-comps.h"
 
 .  for method
-    $((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))
-    {}
+$((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))$(get_const(method))
+{}
 .  endfor
 . endif
 .endfor
