@@ -1,5 +1,5 @@
 .template 0
-echo "processing urho3d-components-header"
+echo "processing urho3d-components-header $(switches.topdir?"notopdir")"
 function is_primitive(type)
     result = my.type="int"|my.type="float"|my.type="bool"
     return result
@@ -29,9 +29,35 @@ function get_type_name(type)
     else 
         abort("Unknown type:'$(type)'  Line:$(line)")
 endif
-
-
 endfunction
+
+function get_virtual(method)
+    if (defined(my.method.virtual)&my.method.virtual="true") | (defined(my.method.override)&my.method.override="true")
+        return "virtual"
+    else
+        return ""
+    endif
+endfunction
+
+function get_params(method)
+    _params=""
+    for my.method.parameter
+        if !first()
+            _params+=","
+        endif
+        _params+="$(type:) $(name:)"
+    endfor
+    return _params
+endfunction
+
+function get_method_signature_with_decorators(method)
+    _override=""
+    if defined(my.method.override) & my.method.override="true"
+        _override=" override"
+    endif   
+    return "$(get_virtual(my.method)) $((my.method.return_type?"void"):) $(name:)($(get_params(my.method)))$(_override)"
+endfunction
+
 
 .endtemplate
 .output "Generated/gen-comps.h"
@@ -41,7 +67,24 @@ endfunction
 #include <Urho3D/Urho3DAll.h>
 
 .for component
+. if !defined(componentType)
+.   component.componentType="Component"
+. endif
 . for field by name
+.  field.expose = !defined(field.expose) | field.expose="true"
+.  field.visibility = field.visibility ? "private"
+.  if field.visibility="public"
+.   .component_has_public="true"
+.   echo "$(field.name) is public"
+.  elsif field.visibility="protected"
+.   .component_has_protected="true"
+.   echo "$(field.name) is protected $(component_has_protected)"
+.  elsif field.visibility="private"
+.   echo "$(field.name) is private"
+.   component_has_private="true"
+.  else
+.   abort("[ERROR line $(line)]: Unknown visiblity($(my.field.visiblity)) for field $(my.field.name) in component '$(my.component.name)'")    
+.  endif
 .  if !defined(type)
 .   abort("No type for field:$(name) $(line)")
 .  endif
@@ -72,19 +115,58 @@ static const $(enum:) default_$(component.name)_$(name:) = $(prefix:)$(default:)
 .  endif
 . endfor
 
-class $(name:) : public Component
+class $(name:) : public $(component.componentType)
 {
-    URHO3D_OBJECT($(name:),Component);
+    URHO3D_OBJECT($(name:),$(component.componentType));
 public:
     static void RegisterObject(Context *context);
 
     $(name:)(Context* ctx);
+.
+.# -- output methods --
 
-//    const Vector3& GetGroupOffset() const  { return groupOffset;}
-//    void SetGroupOffset(const Vector3& groupOffset);
-
+. for method where !defined(visibility)|visibility="private"
+.  if first()
 private:
-. for field
+.  endif
+    $(get_method_signature_with_decorators(method));        
+. endfor
+.
+. for method where visibility?="protected"
+.  if first()
+protected:
+.  endif
+    $(get_method_signature_with_decorators(method));        
+. endfor
+
+. for method where visibility?="public"
+.  if first()
+public:
+.  endif
+    $(get_method_signature_with_decorators(method));        
+. endfor
+
+.# -- output fields--
+. for field where visibility?="private"
+.  if first()
+private:
+.  endif
+.  echo "t:"+field.type
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
+. endfor
+
+. for field where visibility?="protected"
+.  if first()
+protected:
+.  endif
+. echo "t:"+field.type
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
+. endfor
+
+. for field where visibility?="public"
+.  if first()
+public:
+.  endif
 . echo "t:"+field.type
     $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
 . endfor

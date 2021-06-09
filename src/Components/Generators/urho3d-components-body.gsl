@@ -17,12 +17,12 @@ static const char* $(enum:)Names[]={
 };
 . endfor
 
-$(name:)::$(name:)(Context* ctx):Component(ctx){}
+$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){}
 
 void $(name:)::RegisterObject(Context *context)
 {
     context->RegisterFactory<$(name:)>("$(category?"misc":)");
-. for field
+. for field where field.expose
 .  if type="enum"
     URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
 .  else
@@ -45,4 +45,18 @@ void register_components(Context* ctx){
     }
 
 }
+.if !defined(directory.open("impl"))
+. directory.create("impl")
+.endif
+.for component
+. if !file.exists("impl/$(component.name:).cpp")    
+.output "impl/$(component.name:).cpp"
+#include "../Generated/gen-comps.h"
+
+.  for method
+    $((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))
+    {}
+.  endfor
+. endif
+.endfor
 .endtemplate
