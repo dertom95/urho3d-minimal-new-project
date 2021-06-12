@@ -27,15 +27,16 @@ void $(name:)::RegisterObject(Context *context)
 . for field where field.expose
 .  if type="enum"
 .   if defined(field->getterSetter)
-    URHO3D_ENUM_ACCESSOR_ATTRIBUTE("$(name:)",$(field.gettername:),$(field.settername:),$(enum:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
+    URHO3D_ENUM_ACCESSOR_ATTRIBUTE("$(name:)",$(field.gettername:),$(field.settername:),$(enum:), $(enum:)Names, default_$(component.name)_$(name), AM_DEFAULT);
 .   else
-    URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name:), AM_DEFAULT);
+    URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name), AM_DEFAULT);
 .   endif  
 .  else
 .   if defined(field->getterSetter)
-    URHO3D_ACCESSOR_ATTRIBUTE("$(name:)", $(field.gettername:), $(field.settername:), $(get_type_name(type)), default_$(component.name)_$(name:), AM_DEFAULT);
+.    default_name="default_$(component.name)_$(name:)"
+    URHO3D_ACCESSOR_ATTRIBUTE("$(name:)", $(field.gettername:), $(field.settername:), $(get_type_name(type)), $(default_name), AM_DEFAULT);
 .   else
-    URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default_$(component.name)_$(name:), AM_DEFAULT);
+    URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default_$(component.name)_$(name), AM_DEFAULT);
 .   endif 
 .  endif    
 . endfor # field
@@ -70,7 +71,17 @@ void register_components(Context* ctx){
 
 .  for method
 $((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))$(get_const(method))
+.    if defined(method.is_getter)
+{
+    return $(method.field_name:);
+}
+.    elsif defined(method.is_setter)
+{
+    this->$(field_name:)=$(method->parameter.name:);
+}
+.    else
 {}
+.    endif
 .  endfor
 . endif
 .endfor

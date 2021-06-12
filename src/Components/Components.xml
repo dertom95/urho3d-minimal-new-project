@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <components folder="." script="Generators/urho3d-components.gsl">
     <component name="TestComponent" componentType="LogicComponent" category="minimal">
-        <field name="vec3_value" type="vector3" default="1.0f,0.0f,0.0f" visibility="public"/>
+        <field name="vec3_value" type="vector3" default="1.0f,0.0f,0.0f" visibility="public">
+            Position Indicator Bla    
+        </field>
+
         <field name="vec2_value" type="vector2" default="1.0f,0.0f" visibility="public"/>
         <field name="int_value2" type="int" default="1895" visibility="protected"/>
         <field name="bool_value" type="bool" default="false"/>
@@ -10,12 +13,22 @@
             <getterSetter getter_name="GetStringValue2" setter_name="SetStringValue"/>
         </field>
         <field name="string2_value" type="string" default="goal" expose="false"/>
-        <field name="TestType" enum="TestEnum" item_prefix="te" type="enum" default="Pawn">
+        <field name="TestType" type="enum" enum="TestEnum" item_prefix="te" default="Pawn">
+            Component Type
             <getterSetter/>
             <item name="Tower" value="0"/>
             <item name="Pawn" />
             <item name="King" />
         </field>
+        <field name="IdleAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="Tex" type="resource_ref" ref_type="Texture2D"/>
+        <field name="Model" type="resource_ref" ref_type="Model"/>
+        <field name="TexCube" type="resource_ref" ref_type="TextureCube"/>
+        <field name="Material" type="resource_ref" ref_type="Material"/>
+        <field name="ParticleEffect" type="resource_ref" ref_type="ParticleEffect"/>
+        <field name="Sound" type="resource_ref" ref_type="Sound"/>
+
+
         <method name="add" return_type="int" virtual="true" visibility="public">
             Addition of a1+a2. Return the result
             <parameter name="a1" type="int"/>
@@ -27,15 +40,12 @@
         </method>
         <method name="SomeConstMethod" const="true"/>
     </component>
-
-    <component name="CCMarker" category="minimal">
-        <field name="use_node_name" type="bool" default="true"/>
-        <field name="name" type="string" default=""/>
-    </component>
-
     <component name="Character" category="catch">
-        <field name="name" type="string" default=""/>
-        <field name="max_energy" type="float" default="5.0f"/>
-        <field name="current_energy" type="float" default="0.0f"/>
+        <field name="Name" type="string" default=""/>
+        <field name="MaxSpeed" type="float" default="10"/>
+        <field name="CurrentSpeed" type="float" default="0" expose="false"/>
+        <field name="IdleAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="WalkAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="RunAnim" type="resource_ref" ref_type="Animation"/>
     </component>
 </components>

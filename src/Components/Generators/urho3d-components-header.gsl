@@ -17,7 +17,12 @@ function is_enum(type)
   return my.type="enum"
 endfunction
 
+function is_resource_ref(type)
+  return my.type="resource_ref"
+endfunction
+
 function get_type_name(type)
+    echo(my.type)
     if is_primitive(my.type)
         return my.type
     elsif is_vector(my.type) 
@@ -26,9 +31,11 @@ function get_type_name(type)
         return "$(my.Type)"
     elsif is_enum(my.type)
         return "$(enum:)"
+    elsif is_resource_ref(my.type)
+        return "ResourceRef"
     else 
         abort("Unknown type:'$(type)'  Line:$(line)")
-endif
+    endif
 endfunction
 
 function get_virtual(method)
@@ -58,6 +65,10 @@ function get_const(method)
     return _const    
 endfunction
 
+function get_tag_text(tag)
+    return "$(string.trim (my.tag.?''):no,left)"
+endfunction
+
 function get_method_signature_with_decorators(method)
     _override=""
     if defined(my.method.override) & my.method.override="true"
@@ -81,6 +92,11 @@ endfunction
 . for field by name
 .  field.expose = !defined(field.expose) | field.expose="true"
 .  field.visibility = field.visibility ? "private"
+.  if field.type="resource_ref" & !defined(field->gettersetter)
+.  # always use gettersetter for resource_ref
+.    new field.getterSetter
+.    endnew
+.  endif
 .  if defined(field->getterSetter)
 . # ------ GETTER SETTER -----------
 .    new component.method
@@ -88,11 +104,15 @@ endfunction
 .      define method.name=methodname
 .      define method.return_type="$(get_type_name(field.type))"
 .      define method.const="true"
+.      define method.is_getter="true"
+.      define method.field_name="$(field.name:)"
 .      field.gettername=methodname
 .    endnew
 .    new component.method
 .      methodname = "$(field->getterSetter.setter_name ? ("Set"+field.Name))"
 .      define method.name=methodname
+.      define method.is_setter="true"
+.      define method.field_name="$(field.name:)"
 .      field.settername=methodname
 .      new method.parameter
 .        define parameter.name="value"
@@ -109,11 +129,11 @@ endfunction
 .# ------- DEFAULT-VALUES -------
 .
 .  if is_primitive(type)
-static const $(type:) default_$(component.name)_$(name:) = $(default:);
+static const $(type:) default_$(component.name)_$(name) = $(default:);
 .  elsif is_vector(type)
-static const $(Type) default_$(component.name)_$(name:)($(default:));
+static const $(Type) default_$(component.name)_$(name)($(default:));
 .  elsif is_string(type)
-static const $(Type) default_$(component.name)_$(name:) = "$(default:)";
+static const $(Type) default_$(component.name)_$(name) = "$(default:)";
 .  elsif is_enum(type)
 .  prefix = ""
 .  if defined(item_prefix)
@@ -128,8 +148,9 @@ enum $(enum:) {
     $(prefix:)$(item.name:)$(item_value:),
 .   endfor    
 };
-static const $(enum:) default_$(component.name)_$(name:) = $(prefix:)$(default:);
-
+static const $(enum:) default_$(component.name)_$(name) = $(prefix:)$(default:);
+.  elsif is_resource_ref(type)
+static const ResourceRef default_$(component.name)_$(name)($(ref_type:)::GetTypeStatic(),"$((default??""):)");
 .  else 
 .  abort("Unknown type:'$(type)' line:$(line)")
 .  endif
@@ -143,12 +164,13 @@ public:
 
     $(name:)(Context* ctx);
 .
-.# -- METHODS --
+.# ---------------- METHODS ----------------------
 
 . for method where !defined(visibility)|visibility="private"
 .  if first()
 private:
 .  endif
+    // $(get_tag_text(method))
     $(get_method_signature_with_decorators(method));        
 . endfor
 .
@@ -156,6 +178,7 @@ private:
 .  if first()
 protected:
 .  endif
+    // $(get_tag_text(method))
     $(get_method_signature_with_decorators(method));        
 . endfor
 
@@ -163,33 +186,34 @@ protected:
 .  if first()
 public:
 .  endif
+    // $(get_tag_text(method))
     $(get_method_signature_with_decorators(method));        
 . endfor
 
-.# -- FIELDS --
+.# ---------------- FIELDS --------------------------
 .
 . for field where visibility?="private"
 .  if first()
 private:
 .  endif
-.  echo "t:"+field.type
-    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
+    $("// "+get_tag_text(field) ? "")
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name);
 . endfor
 
 . for field where visibility?="protected"
 .  if first()
 protected:
 .  endif
-. echo "t:"+field.type
-    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
+    // $(get_tag_text(field))
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name);
 . endfor
 
 . for field where visibility?="public"
 .  if first()
 public:
 .  endif
-. echo "t:"+field.type
-    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name:);
+    // $(get_tag_text(field))
+    $(get_type_name(type)) $(name:)=default_$(component.name)_$(name);
 . endfor
 };
 .echo component.string()
