@@ -161,5 +161,91 @@ private:
 
 
 };
+static const int default_supercharacter_superint = 10;
+
+class SuperCharacter : public Character
+{
+    URHO3D_OBJECT(SuperCharacter,Character);
+public:
+    static void RegisterObject(Context *context);
+
+    SuperCharacter(Context* ctx);
+
+
+
+private:
+    //
+    int SuperInt=default_supercharacter_superint;
+
+
+};
+static const bool default_basetrigger_one_time = false;
+
+class BaseTrigger : public Component
+{
+    URHO3D_OBJECT(BaseTrigger,Component);
+public:
+    static void RegisterObject(Context *context);
+
+    BaseTrigger(Context* ctx);
+
+
+
+private:
+    //
+    bool one_time=default_basetrigger_one_time;
+
+
+};
+enum DefaultTriggerType {
+    tt_powerup,
+    tt_death,
+    tt_bonus_life,
+    tt_paralyze,
+};
+static const DefaultTriggerType default_defaulttrigger_trigger_type = tt_powerup;
+
+class DefaultTrigger : public BaseTrigger
+{
+    URHO3D_OBJECT(DefaultTrigger,BaseTrigger);
+public:
+    static void RegisterObject(Context *context);
+
+    DefaultTrigger(Context* ctx);
+
+
+
+private:
+    //
+    DefaultTriggerType trigger_type=default_defaulttrigger_trigger_type;
+
+
+};
+enum ActionTriggerType {
+    at_open,
+    at_close,
+    at_enable_physics,
+};
+static const ActionTriggerType default_actiontrigger_action_trigger = at_open;
+static const String default_actiontrigger_object_obj = "";
+
+class ActionTrigger : public BaseTrigger
+{
+    URHO3D_OBJECT(ActionTrigger,BaseTrigger);
+public:
+    static void RegisterObject(Context *context);
+
+    ActionTrigger(Context* ctx);
+
+
+
+private:
+    //
+    ActionTriggerType action_trigger=default_actiontrigger_action_trigger;
+    //
+    String object_OBJ=default_actiontrigger_object_obj;
+
+
+};
 
 void register_components(Context* ctx);

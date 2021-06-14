@@ -14,7 +14,7 @@ if (COMMAND cmake_policy)
 endif ()
 
 # Set project name
-project (minimal-urho3d)
+project (Catch)
 
 source_group("Source" ${PROJECT_SOURCE_DIR})
 
@@ -28,6 +28,7 @@ option(GAME_ENABLE_COMPONENT_EXPORTER "Enable Component-Export as JSON" ON)
 option(GAME_RETRIEVE_GIT_HASH "Retrieve current-githash" ON)
 # ANDROID: atm(04/2020) lua-scripting leads to an runtime-error (not sure why)
 option(GAME_ENABLE_LUA_SCRIPTING "Enable LUA-Scripting" OFF)
+option(GAME_ENABLE_GSL_GENERATION "Enable GSL-Generation" OFF)
 
 if (GAME_ENABLE_DEBUG_TOOLS)
     set (URHO3D_PACKAGING 0 CACHE BOOL "")
@@ -69,20 +70,22 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CU
 
 # hacky: since I generate in source-tree and I'm sure the files are there I can use a dummy as output
 #        this is only to let qtcreator to still show the gnenerated files
-if (UNIX)
+if (GAME_ENABLE_GSL_GENERATION)
+ if (UNIX)
     add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
         DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
         COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.sh
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
     )
-endif()
+ endif()
 
-if (WIN32)
+ if (WIN32)
     add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
         DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
         COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.bat
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
     )
+ endif()
 endif()
 
 

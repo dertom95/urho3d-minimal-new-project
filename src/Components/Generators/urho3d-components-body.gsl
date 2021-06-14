@@ -53,7 +53,7 @@ void register_components(Context* ctx){
 .# ---------------- NODE Exporter ----------------------------- (TODO: generate json with GSL?)
     auto exporter = ctx->GetSubsystem<Urho3DNodeTreeExporter>();
     if (exporter){
-.for component
+.for component where !defined(component.expose) | component.expose="true"
         exporter->AddComponentHashToFilterList($(name:)::GetTypeStatic());
 .endfor # component    
     }

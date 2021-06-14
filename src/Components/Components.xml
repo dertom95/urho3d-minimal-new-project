@@ -48,4 +48,35 @@
         <field name="WalkAnim" type="resource_ref" ref_type="Animation"/>
         <field name="RunAnim" type="resource_ref" ref_type="Animation"/>
     </component>
+    <component name="SuperCharacter" componentType="Character" category="catch">
+        <field name="SuperInt" type="int" default="10"/>
+    </component>
+
+    <component name="BaseTrigger" category="c_triggers" expose="false">
+        <field name="one_time" type="bool" default="false"/>
+    </component>
+
+    <component name="DefaultTrigger" category="c_triggers" componentType="BaseTrigger">
+        <field name="trigger_type" type="enum" enum="DefaultTriggerType" item_prefix="tt" default="powerup">
+            <item name="powerup"/>
+            <item name="death"/>
+            <item name="bonus_life"/>
+            <item name="paralyze"/>
+        </field>
+    </component>
+
+    <component name="ActionTrigger" category="c_triggers" componentType="BaseTrigger">
+        <field name="action_trigger" type="enum" enum="ActionTriggerType" item_prefix="at" default="open">
+            <item name="open"/>
+            <item name="close"/>
+            <item name="enable_physics"/>
+        </field>
+        <field name="object_OBJ" type="string" default=""/>
+    </component>
+
+
+
+
+
+
 </components>

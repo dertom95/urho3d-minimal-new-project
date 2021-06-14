@@ -43,16 +43,69 @@ void Character::RegisterObject(Context *context)
     URHO3D_ACCESSOR_ATTRIBUTE("RunAnim", GetRunAnim, SetRunAnim, ResourceRef, default_character_runanim, AM_DEFAULT);
 }
 
+SuperCharacter::SuperCharacter(Context* ctx):Character(ctx){}
+
+void SuperCharacter::RegisterObject(Context *context)
+{
+    context->RegisterFactory<SuperCharacter>("catch");
+    URHO3D_ATTRIBUTE("SuperInt", int, SuperInt, default_supercharacter_superint, AM_DEFAULT);
+}
+
+BaseTrigger::BaseTrigger(Context* ctx):Component(ctx){}
+
+void BaseTrigger::RegisterObject(Context *context)
+{
+    context->RegisterFactory<BaseTrigger>("c_triggers");
+    URHO3D_ATTRIBUTE("one_time", bool, one_time, default_basetrigger_one_time, AM_DEFAULT);
+}
+static const char* DefaultTriggerTypeNames[]={
+    "powerup",
+    "death",
+    "bonus_life",
+    "paralyze",
+    nullptr
+};
+
+DefaultTrigger::DefaultTrigger(Context* ctx):BaseTrigger(ctx){}
+
+void DefaultTrigger::RegisterObject(Context *context)
+{
+    context->RegisterFactory<DefaultTrigger>("c_triggers");
+    URHO3D_ENUM_ATTRIBUTE("trigger_type", trigger_type, DefaultTriggerTypeNames, default_defaulttrigger_trigger_type, AM_DEFAULT);
+}
+static const char* ActionTriggerTypeNames[]={
+    "open",
+    "close",
+    "enable_physics",
+    nullptr
+};
+
+ActionTrigger::ActionTrigger(Context* ctx):BaseTrigger(ctx){}
+
+void ActionTrigger::RegisterObject(Context *context)
+{
+    context->RegisterFactory<ActionTrigger>("c_triggers");
+    URHO3D_ENUM_ATTRIBUTE("action_trigger", action_trigger, ActionTriggerTypeNames, default_actiontrigger_action_trigger, AM_DEFAULT);
+    URHO3D_ATTRIBUTE("object_OBJ", String, object_OBJ, default_actiontrigger_object_obj, AM_DEFAULT);
+}
+
 
 
 void register_components(Context* ctx){
     TestComponent::RegisterObject(ctx);
     Character::RegisterObject(ctx);
+    SuperCharacter::RegisterObject(ctx);
+    BaseTrigger::RegisterObject(ctx);
+    DefaultTrigger::RegisterObject(ctx);
+    ActionTrigger::RegisterObject(ctx);
 
     auto exporter = ctx->GetSubsystem<Urho3DNodeTreeExporter>();
     if (exporter){
         exporter->AddComponentHashToFilterList(TestComponent::GetTypeStatic());
         exporter->AddComponentHashToFilterList(Character::GetTypeStatic());
+        exporter->AddComponentHashToFilterList(SuperCharacter::GetTypeStatic());
+        exporter->AddComponentHashToFilterList(DefaultTrigger::GetTypeStatic());
+        exporter->AddComponentHashToFilterList(ActionTrigger::GetTypeStatic());
     }
 
 }
