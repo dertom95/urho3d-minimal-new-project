@@ -722,7 +722,9 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
 
         SharedPtr<ObjectFactory> val = *all[StringHash(objectFactoryName)];
 
-        if (val->GetTypeInfo()->IsTypeOf(Component::GetTypeInfoStatic())){
+        static auto componentTypeInfo = Component::GetTypeInfoStatic();
+
+        if (val->GetTypeInfo()->IsTypeOf(componentTypeInfo)){
        //     URHO3D_LOGINFOF("TYPE:%s\n",val->GetTypeName().CString());
             node["category"]=GetTypeCategory(val->GetTypeInfo()->GetType(),"Misc");
         } else {
@@ -733,190 +735,197 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
         node["name"]=val->GetTypeName();
 
         JSONArray props;
+        auto currentTypeInfo = val->GetTypeInfo();
+        while (currentTypeInfo && currentTypeInfo != componentTypeInfo){
+            auto attrs = context_->GetAttributes(currentTypeInfo->GetType());
+            if (attrs){
+                for (int j = 0;j<attrs->Size();j++){
+                    auto attr = attrs->At(j);
+                  //  URHO3D_LOGINFOF("\tattr:%s\n", attr.name_.CString());
 
-        auto attrs = context_->GetAttributes(val->GetTypeInfo()->GetType());
-        if (attrs){
-            for (int j = 0;j<attrs->Size();j++){
-                auto attr = attrs->At(j);
-              //  URHO3D_LOGINFOF("\tattr:%s\n", attr.name_.CString());
 
+                    if (attr.mode_ & AM_NOEDIT)
+                        continue; // ignore no-edit attributes
 
-                if (attr.mode_ & AM_NOEDIT)
-                    continue; // ignore no-edit attributes
+                    if (attr.name_.Contains('.'))
+                        continue;
 
-                if (attr.name_.Contains('.'))
-                    continue;
+                    JSONObject prop;
 
-                JSONObject prop;
+                    // work around to use new prop-helpers
+                    bool alreadyAdded = false;
 
-                // work around to use new prop-helpers
-                bool alreadyAdded = false;
-
-                prop["name"] = attr.name_;
-                switch (attr.type_){
-                    case VAR_BOOL :
-                        NodeAddProp(node, attr.name_,NT_BOOL,attr.defaultValue_.ToString()); break;
-                    case VAR_INT : {
-                        if (!attr.enumNames_) {
-                            NodeAddProp(node, attr.name_,NT_INT,attr.defaultValue_.ToString());
-                        } else {
-                            JSONArray elements;
-                            for (int idx = 0; attr.enumNames_[idx] != NULL; idx++)
-                            {
-                                NodeAddEnumElement(elements,attr.enumNames_[idx],attr.enumNames_[idx]);
+                    prop["name"] = attr.name_;
+                    switch (attr.type_){
+                        case VAR_BOOL :
+                            NodeAddProp(node, attr.name_,NT_BOOL,attr.defaultValue_.ToString()); break;
+                        case VAR_INT : {
+                            if (!attr.enumNames_) {
+                                NodeAddProp(node, attr.name_,NT_INT,attr.defaultValue_.ToString());
+                            } else {
+                                JSONArray elements;
+                                for (int idx = 0; attr.enumNames_[idx] != NULL; idx++)
+                                {
+                                    NodeAddEnumElement(elements,attr.enumNames_[idx],attr.enumNames_[idx]);
+                                }
+                                NodeAddPropEnum(node, attr.name_, elements,false,attr.defaultValue_.ToString());
                             }
-                            NodeAddPropEnum(node, attr.name_, elements,false,attr.defaultValue_.ToString());
+                            break;
                         }
-                        break;
-                    }
 
-                    case VAR_FLOAT :
-                        NodeAddProp(node, attr.name_,NT_FLOAT,attr.defaultValue_.ToString());break;
-                    case VAR_STRING :
-                        NodeAddProp(node, attr.name_,NT_STRING,attr.defaultValue_.ToString());break;
-                    case VAR_COLOR :
-                        NodeAddProp(node, attr.name_,NT_COLOR,attr.defaultValue_.ToString());break;
-                    case VAR_VECTOR2 :
-                        NodeAddProp(node, attr.name_,NT_VECTOR2,attr.defaultValue_.ToString());break;
-                    case VAR_VECTOR3 :
-                        NodeAddProp(node, attr.name_,NT_VECTOR3,attr.defaultValue_.ToString());break;
-                    case VAR_VECTOR4 :
-                        NodeAddProp(node, attr.name_,NT_VECTOR4,attr.defaultValue_.ToString());break;
+                        case VAR_FLOAT :
+                            NodeAddProp(node, attr.name_,NT_FLOAT,attr.defaultValue_.ToString());break;
+                        case VAR_STRING :
+                            NodeAddProp(node, attr.name_,NT_STRING,attr.defaultValue_.ToString());break;
+                        case VAR_COLOR :
+                            NodeAddProp(node, attr.name_,NT_COLOR,attr.defaultValue_.ToString());break;
+                        case VAR_VECTOR2 :
+                            NodeAddProp(node, attr.name_,NT_VECTOR2,attr.defaultValue_.ToString());break;
+                        case VAR_VECTOR3 :
+                            NodeAddProp(node, attr.name_,NT_VECTOR3,attr.defaultValue_.ToString());break;
+                        case VAR_VECTOR4 :
+                            NodeAddProp(node, attr.name_,NT_VECTOR4,attr.defaultValue_.ToString());break;
 
-                    case VAR_RESOURCEREF :
-                        prop["type"]="string";
-                        if (!attr.defaultValue_.GetResourceRef().type_){
-                            prop["default"]="REF_UNKNOWN";
-                        } else {
-                            auto typeName = context_->GetTypeName(attr.defaultValue_.GetResourceRef().type_);
-                            if (typeName=="Model"){
-                                // dropdown to choose techniques available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"None","None","No Mesh","MESH");
-                                NodeAddEnumElement(enumElems,"__Node-Mesh","Node-Mesh","The node's current mesh","MESH","1");
-                                NodeAddEnumElement(enumElems,"__Node-Col-Mesh","Node-Mesh-Col-Prefix","current meshname with col-prefixed","COLMESH","2");
+                        case VAR_RESOURCEREF :
+                            prop["type"]="string";
+                            if (!attr.defaultValue_.GetResourceRef().type_){
+                                prop["default"]="REF_UNKNOWN";
+                            } else {
+                                auto typeName = context_->GetTypeName(attr.defaultValue_.GetResourceRef().type_);
+                                if (typeName=="Model"){
+                                    // dropdown to choose techniques available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"None","None","No Mesh","MESH");
+                                    NodeAddEnumElement(enumElems,"__Node-Mesh","Node-Mesh","The node's current mesh","MESH","1");
+                                    NodeAddEnumElement(enumElems,"__Node-Col-Mesh","Node-Mesh-Col-Prefix","current meshname with col-prefixed","COLMESH","2");
 
-                                for (String model : modelFiles){
-                                    StringHash hash(model);
-                                    String id(hash.Value() % 10000000);
+                                    for (String model : modelFiles){
+                                        StringHash hash(model);
+                                        String id(hash.Value() % 10000000);
 
-                                    NodeAddEnumElement(enumElems,"Model;"+model,model,"Model "+model,"MESH",id);
+                                        NodeAddEnumElement(enumElems,"Model;"+model,model,"Model "+model,"MESH",id);
+                                    }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
                                 }
+                                else if (typeName == "Animation")
+                                {
+                                    // dropdown to choose techniques available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Animation","ANIM");
 
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-                            }
-                            else if (typeName == "Animation")
-                            {
-                                // dropdown to choose techniques available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Animation","ANIM");
+                                    for (String anim : animationFiles){
+                                        StringHash hash(anim);
+                                        String id(hash.Value() % 10000000);
 
-                                for (String anim : animationFiles){
-                                    StringHash hash(anim);
-                                    String id(hash.Value() % 10000000);
+                                        NodeAddEnumElement(enumElems,"Animation;"+anim,anim,"Animation "+anim,"ANIM",id);
+                                    }
 
-                                    NodeAddEnumElement(enumElems,"Animation;"+anim,anim,"Animation "+anim,"ANIM",id);
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
+
                                 }
+                                else if (typeName == "Texture2D")
+                                {
+                                    // dropdown to choose textures available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Texture","TEXTURE");
 
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-
-                            }
-                            else if (typeName == "Texture2D")
-                            {
-                                // dropdown to choose textures available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Texture","TEXTURE");
-
-                                for (TextureExportPath tex : textureFiles){
-                                    StringHash hash(tex.resFilepath);
-                                    String id(hash.Value() % 10000000);
-
-                                    NodeAddEnumElement(enumElems,"Texture;"+tex.resFilepath,tex.resFilepath,tex.absFilepath,"TEXTURE",id);
-                                }
-
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-
-                            }
-                            else if (typeName == "TextureCube")
-                            {
-                                // dropdown to choose textures available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Texture","TEXTURE");
-
-                                for (TextureExportPath tex : textureFiles){
-                                    if (tex.resFilepath.EndsWith(".xml")){
+                                    for (TextureExportPath tex : textureFiles){
                                         StringHash hash(tex.resFilepath);
                                         String id(hash.Value() % 10000000);
 
-                                        NodeAddEnumElement(enumElems,"TextureCube;"+tex.resFilepath,tex.resFilepath,tex.absFilepath,"TEXTURE",id);
+                                        NodeAddEnumElement(enumElems,"Texture;"+tex.resFilepath,tex.resFilepath,tex.absFilepath,"TEXTURE",id);
                                     }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
+
+                                }
+                                else if (typeName == "TextureCube")
+                                {
+                                    // dropdown to choose textures available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Texture","TEXTURE");
+
+                                    for (TextureExportPath tex : textureFiles){
+                                        if (tex.resFilepath.EndsWith(".xml")){
+                                            StringHash hash(tex.resFilepath);
+                                            String id(hash.Value() % 10000000);
+
+                                            NodeAddEnumElement(enumElems,"TextureCube;"+tex.resFilepath,tex.resFilepath,tex.absFilepath,"TEXTURE",id);
+                                        }
+                                    }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
+
+                                }
+                                else if (typeName == "Material")
+                                {
+                                    // dropdown to choose techniques available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Material","MATERIAL");
+
+                                    for (String mat : materialFiles){
+                                        StringHash hash(mat);
+                                        String id(hash.Value() % 10000000);
+
+                                        NodeAddEnumElement(enumElems,"Material;"+mat,mat,"Material "+mat,"MATERIAL",id);
+                                    }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
+
+                                }
+                                else if (typeName == "ParticleEffect")
+                                {
+                                    // dropdown to choose techniques available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Particle","PARTICLE");
+
+                                    for (String particle : particleFiles){
+                                        StringHash hash(particle);
+                                        String id(hash.Value() % 10000000);
+
+                                        NodeAddEnumElement(enumElems,"ParticleEffect;"+particle,particle,"Particle "+particle,"PARTICLE",id);
+                                    }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
+
+                                }
+                                else if (typeName == "Sound") {
+                                    // dropdown to choose techniques available from the resource-path
+                                    JSONArray enumElems;
+                                    NodeAddEnumElement(enumElems,"none","None","No Sound","SOUND");
+
+                                    for (String sound : soundFiles){
+                                        StringHash hash(sound);
+                                        String id(hash.Value() % 10000000);
+
+                                        NodeAddEnumElement(enumElems,"Sound;"+sound,sound,"Sound "+sound,"Sound",id);
+                                    }
+
+                                    NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
+                                    alreadyAdded = true;
                                 }
 
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-
                             }
-                            else if (typeName == "Material")
-                            {
-                                // dropdown to choose techniques available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Material","MATERIAL");
+                        break;
+                        default:
+                            URHO3D_LOGINFOF("[%s] Skipping attribute:%s",val->GetTypeName().CString(),attr.name_.CString());
+                            continue;
 
-                                for (String mat : materialFiles){
-                                    StringHash hash(mat);
-                                    String id(hash.Value() % 10000000);
-
-                                    NodeAddEnumElement(enumElems,"Material;"+mat,mat,"Material "+mat,"MATERIAL",id);
-                                }
-
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-
-                            }
-                            else if (typeName == "ParticleEffect")
-                            {
-                                // dropdown to choose techniques available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Particle","PARTICLE");
-
-                                for (String particle : particleFiles){
-                                    StringHash hash(particle);
-                                    String id(hash.Value() % 10000000);
-
-                                    NodeAddEnumElement(enumElems,"ParticleEffect;"+particle,particle,"Particle "+particle,"PARTICLE",id);
-                                }
-
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-
-                            }
-                            else if (typeName == "Sound") {
-                                // dropdown to choose techniques available from the resource-path
-                                JSONArray enumElems;
-                                NodeAddEnumElement(enumElems,"none","None","No Sound","SOUND");
-
-                                for (String sound : soundFiles){
-                                    StringHash hash(sound);
-                                    String id(hash.Value() % 10000000);
-
-                                    NodeAddEnumElement(enumElems,"Sound;"+sound,sound,"Sound "+sound,"Sound",id);
-                                }
-
-                                NodeAddPropEnum(node,attr.name_,enumElems,true,"0");
-                                alreadyAdded = true;
-                            }
-
-                        }
-                    break;
-                    default:
-                        URHO3D_LOGINFOF("[%s] Skipping attribute:%s",val->GetTypeName().CString(),attr.name_.CString());
-                        continue;
+                    }
 
                 }
-
+            }
+            currentTypeInfo = currentTypeInfo->GetBaseTypeInfo();
+            if (currentTypeInfo){
+                auto bt = currentTypeInfo->GetBaseTypeInfo();
+                int a=0;
             }
         }
 
