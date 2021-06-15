@@ -17,13 +17,20 @@ static const char* $(enum:)Names[]={
 };
 . endfor # field
 
-.# ------------------- CONSTRUCTOR -----------------------------------
-$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){}
-
 .# ------------------- REGISTER OBJECT -------------------------------
 void $(name:)::RegisterObject(Context *context)
 {
     context->RegisterFactory<$(name:)>("$(category?"misc":)");
+
+    static auto componentTypeInfo = Component::GetTypeInfoStatic();
+
+    auto thizTypeInfo = $(name:)::GetTypeInfoStatic();
+    auto currentTypeInfo = thizTypeInfo->GetBaseTypeInfo();
+    while (currentTypeInfo && currentTypeInfo != componentTypeInfo){
+        context->CopyBaseAttributes(currentTypeInfo->GetType(),thizTypeInfo->GetType());
+        currentTypeInfo = currentTypeInfo->GetBaseTypeInfo();
+    }
+
 . for field where field.expose
 .  if type="enum"
 .   if defined(field->getterSetter)
@@ -68,6 +75,23 @@ void register_components(Context* ctx){
 . if !file.exists("impl/$(component.name:).cpp") | defined(switches.overwrite)
 .output "impl/$(component.name:).cpp"
 #include "../Generated/gen-comps.h"
+
+.# ------------------- CONSTRUCTOR / DESTRUCTOR -----------------------------------
+.if defined(component.internaldata) & component.internaldata="true"
+struct $(name:)::InternalData{
+    // add internal data here
+};
+
+$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){
+    data = new InternalData();
+}
+$(name:)::~$(name:)(){
+    delete data;
+}
+.else
+$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){}
+$(name:)::~$(name:)(){}
+.endif    
 
 .  for method
 $((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))$(get_const(method))

@@ -736,7 +736,11 @@ JSONObject Urho3DNodeTreeExporter::ExportComponents()
 
         JSONArray props;
         auto currentTypeInfo = val->GetTypeInfo();
-        while (currentTypeInfo && currentTypeInfo != componentTypeInfo){
+        //while (currentTypeInfo && currentTypeInfo != componentTypeInfo)
+        //the idea was to get the inherited attributes by going up the hierarchy, but
+        //that is doesn't work with the deserializing.... you need to use
+        // URHO3D_COPY_BASE_ATTRIBUTES(baseClazz);
+        {
             auto attrs = context_->GetAttributes(currentTypeInfo->GetType());
             if (attrs){
                 for (int j = 0;j<attrs->Size();j++){

@@ -159,12 +159,20 @@ static const ResourceRef default_$(component.name)_$(name)($(ref_type:)::GetType
 class $(name:) : public $(component.componentType)
 {
     URHO3D_OBJECT($(name:),$(component.componentType));
+
 public:
     static void RegisterObject(Context *context);
 
     $(name:)(Context* ctx);
+    virtual ~$(name:)();
 .
 .# ---------------- METHODS ----------------------
+private:
+.if defined(component.internaldata) & component.internaldata="true"
+    struct InternalData;
+    
+    InternalData* data;
+.endif
 
 . for method where !defined(visibility)|visibility="private"
 .  if first()
