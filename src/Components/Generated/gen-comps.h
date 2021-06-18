@@ -2,57 +2,73 @@
 
 #include <Urho3D/Urho3DAll.h>
 
-static const bool defaultbool_value = false; /* 1 */
+static const bool default_testcomponent_bool_value = false;
 enum TestEnum {
     te_Tower=0,
     te_Pawn,
     te_King,
 };
-static const TestEnum defaultenum_value = te_Pawn;
-
-static const float defaultfloat_value = 18.95f; /* 1 */
-static const int defaultint_value2 = 1895; /* 1 */
-static const String defaultstring_value = "Fortuna!";
-static const Vector2 defaultvec2_value(1.0f,0.0f);
-static const Vector3 defaultvec3_value(1.0f,0.0f,0.0f);
+static const TestEnum default_testcomponent_enum_value = te_Pawn;
+static const float default_testcomponent_float_value = 18.95f;
+static const int default_testcomponent_int_value2 = 1895;
+static const String default_testcomponent_string_value = "Fortuna!";
+static const Vector2 default_testcomponent_vec2_value(1.0f,0.0f);
+static const Vector3 default_testcomponent_vec3_value(1.0f,0.0f,0.0f);
 
 class TestComponent : public Component
 {
     URHO3D_OBJECT(TestComponent,Component);
+
 public:
     static void RegisterObject(Context *context);
 
     TestComponent(Context* ctx);
-
-//    const Vector3& GetGroupOffset() const  { return groupOffset;}
-//    void SetGroupOffset(const Vector3& groupOffset);
-
+    virtual ~TestComponent();
 private:
-    Vector3 vec3_value=defaultvec3_value;
-    Vector2 vec2_value=defaultvec2_value;
-    int int_value2=defaultint_value2;
-    bool bool_value=defaultbool_value;
-    float float_value=defaultfloat_value;
-    String string_value=defaultstring_value;
-    TestEnum enum_value=defaultenum_value;
+
+
+
+
+
+public:
+    //
+    Vector3 vec3_value=default_testcomponent_vec3_value;
+    //
+    Vector2 vec2_value=default_testcomponent_vec2_value;
+    //
+    int int_value2=default_testcomponent_int_value2;
+    //
+    bool bool_value=default_testcomponent_bool_value;
+    //
+    float float_value=default_testcomponent_float_value;
+    //
+    String string_value=default_testcomponent_string_value;
+    //
+    TestEnum enum_value=default_testcomponent_enum_value;
 };
-static const String defaultname = "";
-static const bool defaultuse_node_name = true; /* 1 */
+static const String default_ccmarker_name = "";
+static const bool default_ccmarker_use_node_name = true;
 
 class CCMarker : public Component
 {
     URHO3D_OBJECT(CCMarker,Component);
+
 public:
     static void RegisterObject(Context *context);
 
     CCMarker(Context* ctx);
-
-//    const Vector3& GetGroupOffset() const  { return groupOffset;}
-//    void SetGroupOffset(const Vector3& groupOffset);
-
+    virtual ~CCMarker();
 private:
-    bool use_node_name=defaultuse_node_name;
-    String name=defaultname;
+
+
+
+
+
+public:
+    //
+    bool use_node_name=default_ccmarker_use_node_name;
+    //
+    String name=default_ccmarker_name;
 };
 
 void register_components(Context* ctx);

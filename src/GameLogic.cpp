@@ -3,7 +3,7 @@
 #include <Urho3D/Urho3DAll.h>
 
 #include <Navigation/GameNavigation.h>
-#include "Components/RenderData.h"
+#include <DefaultComponents/RenderData.h>
 
 #ifdef GAME_ENABLE_LUA_SCRIPTING
 # include "Subsystems/LuaScripting/LuaScripting.h"

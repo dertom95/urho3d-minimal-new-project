@@ -18,6 +18,10 @@ project (minimal-urho3d)
 
 source_group("Source" ${PROJECT_SOURCE_DIR})
 
+# add dependencies
+include(cmake/dependencies.cmake)
+
+
 # Set CMake modules search path
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
 # Include UrhoCommon.cmake module after setting project name
@@ -28,6 +32,7 @@ option(GAME_ENABLE_COMPONENT_EXPORTER "Enable Component-Export as JSON" ON)
 option(GAME_RETRIEVE_GIT_HASH "Retrieve current-githash" ON)
 # ANDROID: atm(04/2020) lua-scripting leads to an runtime-error (not sure why)
 option(GAME_ENABLE_LUA_SCRIPTING "Enable LUA-Scripting" OFF)
+option(GAME_ENABLE_GSL_GENERATION "Enable GSL-Generation" OFF)
 
 if (GAME_ENABLE_DEBUG_TOOLS)
     set (URHO3D_PACKAGING 0 CACHE BOOL "")
@@ -66,6 +71,7 @@ if (GAME_ENABLE_LUA_SCRIPTING)
 endif()
 
 
+
 # create configure file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
 
@@ -73,10 +79,43 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CU
 file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xml)
 
 set(INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated)
+set(LIBS )
 
 # include addons
-include("cmake/Addons.cmake")
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/urho3d-addons")
+    set(ADDON_FOLDER "${CMAKE_CURRENT_SOURCE_DIR}/urho3d-addons")
 
+    list(APPEND INCLUDE_DIRS ${ADDON_FOLDER})
+
+    add_subdirectory(${ADDON_FOLDER}/Navigation)
+    add_subdirectory(${ADDON_FOLDER}/DefaultComponents)
+    if (GAME_ENABLE_DEBUG_TOOLS)
+        add_subdirectory(${ADDON_FOLDER}/Editor)
+    endif()
+    if (GAME_ENABLE_COMPONENT_EXPORTER)
+        add_subdirectory(${ADDON_FOLDER}/ComponentExporter)
+    endif()
+
+    if (GAME_ENABLE_GSL_GENERATION)
+     list(APPEND SOURCE_FILES ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp )
+     if (UNIX)
+        add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
+            DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+            COMMAND ${ADDON_FOLDER}/ComponentGenerator/generate_components.sh ${CMAKE_SOURCE_DIR}/src/Components/Components.xml ${CMAKE_SOURCE_DIR}/src/Components/
+            WORKING_DIRECTORY ${ADDON_FOLDER}/ComponentGenerator
+        )
+     endif()
+
+     if (WIN32)
+        add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
+            DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+            COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.bat
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
+        )
+     endif()
+    endif()
+endif()
+MESSAGE("AFTER LIBS:${LIBS}")
 # Setup target with resource copying
 setup_main_executable ()
 

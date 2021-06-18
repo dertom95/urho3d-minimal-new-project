@@ -1,3 +1,6 @@
 [submodule "src/absengine"]
 	path = src/absengine
 	url = http://ttrocha@nas-02:3000/ttrocha/absengine.git
+[submodule "urho3d-addons"]
+	path = urho3d-addons
+	url = git@github.com:dertom95/urho3d-addons.git
