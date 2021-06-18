@@ -14,7 +14,7 @@ if (COMMAND cmake_policy)
 endif ()
 
 # Set project name
-project (minimal-urho3d)
+project (Catch)
 
 source_group("Source" ${PROJECT_SOURCE_DIR})
 
@@ -66,14 +66,33 @@ if (GAME_RETRIEVE_GIT_HASH)
     endif()
 endif()
 
-if (GAME_ENABLE_LUA_SCRIPTING)
-    add_definitions(-fpermissive)
-endif()
+add_definitions(-fpermissive)
 
 
 
 # create configure file
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/project_options.h.in ${CMAKE_CURRENT_SOURCE_DIR}/src/Generated/project_options.h @ONLY)
+
+# hacky: since I generate in source-tree and I'm sure the files are there I can use a dummy as output
+#        this is only to let qtcreator to still show the gnenerated files
+if (GAME_ENABLE_GSL_GENERATION)
+ if (UNIX)
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+        COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.sh
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
+    )
+ endif()
+
+ if (WIN32)
+    add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/Components/Generated/gen-comps.cpp
+        DEPENDS ${CMAKE_SOURCE_DIR}/src/Components/Components.xml
+        COMMAND ${CMAKE_SOURCE_DIR}/src/Components/generate_components.bat
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/Components
+    )
+ endif()
+endif()
+
 
 # get all source files
 file( GLOB_RECURSE SOURCE_FILES FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR} src/*.cpp src/*.h src/*.xml)
@@ -118,4 +137,3 @@ endif()
 MESSAGE("AFTER LIBS:${LIBS}")
 # Setup target with resource copying
 setup_main_executable ()
-

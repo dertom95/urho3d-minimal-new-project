@@ -46,6 +46,8 @@ void StartupApplication::Start()
 
   #ifdef GAME_ENABLE_COMPONENT_EXPORTER
     SetupComponentExporter();
+    register_components(context_);
+
     // export registered components
     ExportComponents(String(PROJECT_NAME)+"_components.json");
   #endif
@@ -100,13 +102,13 @@ void StartupApplication::SetupComponentExporter()
 //    exporter->AddSuperComponentHashToFilterList(LogicComponent::GetTypeStatic());
 
 
-//    exporter->AddMaterialFolder("Materials");
-//    exporter->AddTechniqueFolder("Techniques");
-//    exporter->AddTextureFolder("Textures");
-//    exporter->AddModelFolder("Models");
-//    exporter->AddAnimationFolder("Models");
-//    exporter->AddParticleFolder("Particle");
-//    exporter->AddSoundFolder("Sounds");
+    exporter->AddMaterialFolder("Materials");
+    exporter->AddTechniqueFolder("Techniques");
+    exporter->AddTextureFolder("Textures");
+    exporter->AddModelFolder("Models");
+    exporter->AddAnimationFolder("Models");
+    exporter->AddParticleFolder("Particle");
+    exporter->AddSoundFolder("Sounds");
 
     // explicitly export those components
 //    exporter->AddComponentHashToFilterList(Light::GetTypeStatic());
@@ -135,7 +137,6 @@ void StartupApplication::SetupComponentExporter()
 
 void StartupApplication::ExportComponents(const String& outputPath)
 {
-    register_components(context_);
     Urho3DNodeTreeExporter* exporter = GetSubsystem<Urho3DNodeTreeExporter>();
     exporter->Export(outputPath,true,false);
 }

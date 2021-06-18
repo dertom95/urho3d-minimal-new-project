@@ -1,0 +1,112 @@
+.output "Generated/gen-comps.cpp"
+.template 1
+.echo "processing urho3d-components-bodyr"
+
+#include "gen-comps.h"
+
+#include "../../Subsystems/LoaderTools/ComponentExporter.h"
+
+.#--------------------- ENUM-NAMES -----------------------------------
+.for component
+. for field where field.type="enum" & field.expose
+static const char* $(enum:)Names[]={
+.  for item
+    "$(name:)",
+.  endfor # item
+    nullptr
+};
+. endfor # field
+
+.# ------------------- REGISTER OBJECT -------------------------------
+void $(name:)::RegisterObject(Context *context)
+{
+    context->RegisterFactory<$(name:)>("$(category?"misc":)");
+
+    static auto componentTypeInfo = Component::GetTypeInfoStatic();
+
+    auto thizTypeInfo = $(name:)::GetTypeInfoStatic();
+    auto currentTypeInfo = thizTypeInfo->GetBaseTypeInfo();
+    while (currentTypeInfo && currentTypeInfo != componentTypeInfo){
+        context->CopyBaseAttributes(currentTypeInfo->GetType(),thizTypeInfo->GetType());
+        currentTypeInfo = currentTypeInfo->GetBaseTypeInfo();
+    }
+
+. for field where field.expose
+.  if type="enum"
+.   if defined(field->getterSetter)
+    URHO3D_ENUM_ACCESSOR_ATTRIBUTE("$(name:)",$(field.gettername:),$(field.settername:),$(enum:), $(enum:)Names, default_$(component.name)_$(name), AM_DEFAULT);
+.   else
+    URHO3D_ENUM_ATTRIBUTE("$(name:)", $(name:), $(enum:)Names, default_$(component.name)_$(name), AM_DEFAULT);
+.   endif  
+.  else
+.   if defined(field->getterSetter)
+.    default_name="default_$(component.name)_$(name:)"
+    URHO3D_ACCESSOR_ATTRIBUTE("$(name:)", $(field.gettername:), $(field.settername:), $(get_type_name(type)), $(default_name), AM_DEFAULT);
+.   else
+    URHO3D_ATTRIBUTE("$(name:)", $(get_type_name(type)), $(name:), default_$(component.name)_$(name), AM_DEFAULT);
+.   endif 
+.  endif    
+. endfor # field
+}
+.endfor # --- main-loop-end: component ----------
+
+
+
+void register_components(Context* ctx){
+.for component
+    $(name:)::RegisterObject(ctx);
+.endfor # component    
+
+.# ---------------- NODE Exporter ----------------------------- (TODO: generate json with GSL?)
+    auto exporter = ctx->GetSubsystem<Urho3DNodeTreeExporter>();
+    if (exporter){
+.for component where !defined(component.expose) | component.expose="true"
+        exporter->AddComponentHashToFilterList($(name:)::GetTypeStatic());
+.endfor # component    
+    }
+
+}
+
+.# ---------------- GENERATE IMPL-FILES ----------------------------------------------------------------
+.if !defined(directory.open("impl"))
+. directory.create("impl")
+.endif
+.for component
+. if !file.exists("impl/$(component.name:).cpp") | defined(switches.overwrite)
+.output "impl/$(component.name:).cpp"
+#include "../Generated/gen-comps.h"
+
+.# ------------------- CONSTRUCTOR / DESTRUCTOR -----------------------------------
+.if defined(component.internaldata) & component.internaldata="true"
+struct $(name:)::InternalData{
+    // add internal data here
+};
+
+$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){
+    data = new InternalData();
+}
+$(name:)::~$(name:)(){
+    delete data;
+}
+.else
+$(name:)::$(name:)(Context* ctx):$(component.componentType)(ctx){}
+$(name:)::~$(name:)(){}
+.endif    
+
+.  for method
+$((method.return_type?"void"):) $(component.name:)::$(method.name:)($(get_params(method)))$(get_const(method))
+.    if defined(method.is_getter)
+{
+    return $(method.field_name:);
+}
+.    elsif defined(method.is_setter)
+{
+    this->$(field_name:)=$(method->parameter.name:);
+}
+.    else
+{}
+.    endif
+.  endfor
+. endif
+.endfor
+.endtemplate

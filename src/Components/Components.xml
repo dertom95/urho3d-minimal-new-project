@@ -1,21 +1,82 @@
 <?xml version="1.0"?>
 <components folder="." script="Generators/urho3d-components.gsl">
-    <component name="TestComponent" category="minimal">
-        <field name="vec3_value" type="vector3" default="1.0f,0.0f,0.0f"/>
-        <field name="vec2_value" type="vector2" default="1.0f,0.0f"/>
-        <field name="int_value2" type="int" default="1895"/>
+    <component name="TestComponent" componentType="LogicComponent" category="minimal">
+        <field name="vec3_value" type="vector3" default="1.0f,0.0f,0.0f" visibility="public">
+            Position Indicator Bla    
+        </field>
+
+        <field name="vec2_value" type="vector2" default="1.0f,0.0f" visibility="public"/>
+        <field name="int_value2" type="int" default="1895" visibility="protected"/>
         <field name="bool_value" type="bool" default="false"/>
         <field name="float_value" type="float" default="18.95f"/>
-        <field name="string_value" type="string" default="Fortuna!"/>
-        <field name="enum_value" enum="TestEnum" item_prefix="te" type="enum" default="Pawn">
+        <field name="string_value" type="string" default="Fortuna!">
+            <getterSetter getter_name="GetStringValue2" setter_name="SetStringValue"/>
+        </field>
+        <field name="string2_value" type="string" default="goal" expose="false"/>
+        <field name="TestType" type="enum" enum="TestEnum" item_prefix="te" default="Pawn">
+            Component Type
+            <getterSetter/>
             <item name="Tower" value="0"/>
             <item name="Pawn" />
             <item name="King" />
         </field>
+        <field name="IdleAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="Tex" type="resource_ref" ref_type="Texture2D"/>
+        <field name="Model" type="resource_ref" ref_type="Model"/>
+        <field name="TexCube" type="resource_ref" ref_type="TextureCube"/>
+        <field name="Material" type="resource_ref" ref_type="Material"/>
+        <field name="ParticleEffect" type="resource_ref" ref_type="ParticleEffect"/>
+        <field name="Sound" type="resource_ref" ref_type="Sound"/>
+
+
+        <method name="add" return_type="int" virtual="true" visibility="public">
+            Addition of a1+a2. Return the result
+            <parameter name="a1" type="int"/>
+            <parameter name="a2" type="int"/>
+        </method>
+        <method name="DelayedStart" override="true"/>
+        <method name="Update" override="true">
+            <parameter name="dt" type="float"/>
+        </method>
+        <method name="SomeConstMethod" const="true"/>
+    </component>
+    <component name="Character" category="catch">
+        <field name="Name" type="string" default=""/>
+        <field name="MaxSpeed" type="float" default="10"/>
+        <field name="CurrentSpeed" type="float" default="0" expose="false"/>
+        <field name="IdleAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="WalkAnim" type="resource_ref" ref_type="Animation"/>
+        <field name="RunAnim" type="resource_ref" ref_type="Animation"/>
+    </component>
+    <component name="SuperCharacter" componentType="Character" category="catch">
+        <field name="SuperInt" type="int" default="10"/>
     </component>
 
-    <component name="CCMarker" category="minimal">
-        <field name="use_node_name" type="bool" default="true"/>
-        <field name="name" type="string" default=""/>
+    <component name="BaseTrigger" category="c_triggers" expose="false">
+        <field name="one_time" type="bool" default="false"/>
     </component>
+
+    <component name="DefaultTrigger" category="c_triggers" componentType="BaseTrigger">
+        <field name="trigger_type" type="enum" enum="DefaultTriggerType" item_prefix="tt" default="powerup">
+            <item name="powerup"/>
+            <item name="death"/>
+            <item name="bonus_life"/>
+            <item name="paralyze"/>
+        </field>
+    </component>
+
+    <component name="ActionTrigger" category="c_triggers" componentType="BaseTrigger">
+        <field name="action_trigger" type="enum" enum="ActionTriggerType" item_prefix="at" default="open">
+            <item name="open"/>
+            <item name="close"/>
+            <item name="enable_physics"/>
+        </field>
+        <field name="object_OBJ" type="string" default=""/>
+    </component>
+
+
+
+
+
+
 </components>
